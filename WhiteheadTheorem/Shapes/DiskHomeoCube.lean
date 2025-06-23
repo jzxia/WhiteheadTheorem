@@ -25,7 +25,7 @@ def pDiskBoundary (n : ℕ) (p : ℝ≥0∞) [hp : Fact (1 ≤ p)] : TopCat.{u} 
   TopCat.of <| ULift <| Metric.sphere (0 : PiLp p fun (_ : Fin n) ↦ ℝ) 1
 
 /-- The inclusion of the boundary of the `pDisk`. -/
-def pDiskBoundaryInclusion (n : ℕ) (p : ℝ≥0∞) [hp : Fact (1 ≤ p)] :
+def pDiskBoundaryIncl (n : ℕ) (p : ℝ≥0∞) [hp : Fact (1 ≤ p)] :
     pDiskBoundary.{u} n p ⟶ pDisk.{u} n p :=
   ofHom
     { toFun := fun ⟨p, hp⟩ ↦ ⟨p, le_of_eq hp⟩
@@ -240,8 +240,8 @@ end pDiskBoundary
 /-- Homeomorphism from the pair (pDisk n p, pDiskBoundary n p)
 to the pair (pDisk n q, pDiskBoundary n q) -/
 noncomputable def pDiskPair.homeoQDiskPair :
-    CategoryTheory.Arrow.mk (pDiskBoundaryInclusion n p) ≅
-    CategoryTheory.Arrow.mk (pDiskBoundaryInclusion n q) :=
+    CategoryTheory.Arrow.mk (pDiskBoundaryIncl n p) ≅
+    CategoryTheory.Arrow.mk (pDiskBoundaryIncl n q) :=
   CategoryTheory.Arrow.isoMk' _ _
     (pDiskBoundary.isoQDiskBoundary n p q) (pDisk.isoQDisk n p q) rfl
 
@@ -265,7 +265,7 @@ namespace TopCat
 (the disk in `ℝⁿ` according to the `L∞` norm). -/
 def largeCubeHomeoPDisk (n : ℕ) : (Fin n → Set.Icc (-1 : ℝ) (1 : ℝ)) ≃ₜ pDisk n ∞ where
   toFun := fun x ↦ ⟨⟨fun i ↦ x i, by
-    simp only [Int.toNat_ofNat, Metric.mem_closedBall, PiLp.dist_eq_iSup]
+    simp only [Int.toNat_natCast, Metric.mem_closedBall, PiLp.dist_eq_iSup]
     refine Real.iSup_le ?_ (by norm_num)
     intro i
     simp only [PiLp.zero_apply, dist_zero_right, Real.norm_eq_abs, abs_le]
@@ -377,14 +377,14 @@ noncomputable def diskBoundaryIsoCubeBoundary (n : ℕ) :
   isoOfHomeo (diskBoundaryHomeoCubeBoundary n)
 
 noncomputable def diskPair.homeoCubePair (n : ℕ) :
-    CategoryTheory.Arrow.mk (diskBoundaryInclusion n) ≅
-    CategoryTheory.Arrow.mk (TopCat.ofHom (Cube.boundaryInclusion n)) :=
+    CategoryTheory.Arrow.mk (diskBoundaryIncl n) ≅
+    CategoryTheory.Arrow.mk (TopCat.ofHom (Cube.boundaryIncl n)) :=
   CategoryTheory.Arrow.isoMk' _ _
     (diskBoundaryIsoCubeBoundary n) (diskIsoCube n) rfl
 
 lemma diskPair.homeoCubePair_comm (n : ℕ) :
-    (diskBoundaryInclusion n) ≫ (diskPair.homeoCubePair n).hom.right =
-    (diskPair.homeoCubePair n).hom.left ≫ TopCat.ofHom (Cube.boundaryInclusion n) := by
+    (diskBoundaryIncl n) ≫ (diskPair.homeoCubePair n).hom.right =
+    (diskPair.homeoCubePair n).hom.left ≫ TopCat.ofHom (Cube.boundaryIncl n) := by
   rfl
 
 --------------------------------------------------------------------------------------
@@ -407,14 +407,14 @@ noncomputable def diskBoundaryIsoCubeBoundaryULift (n : ℕ) :
 /-- Homeomorphism from the pair (TopCat.disk.{u} n, TopCat.diskBoundary.{u} n)
 to the pair (TopCat.cube.{u} n, TopCat.cubeBoundary.{u} n) -/
 noncomputable def diskPair.homeoCubePairULift (n : ℕ) :
-    CategoryTheory.Arrow.mk (diskBoundaryInclusion n) ≅
-    CategoryTheory.Arrow.mk (cubeBoundaryInclusion n) :=
+    CategoryTheory.Arrow.mk (diskBoundaryIncl n) ≅
+    CategoryTheory.Arrow.mk (cubeBoundaryIncl n) :=
   CategoryTheory.Arrow.isoMk' _ _
     (diskBoundaryIsoCubeBoundaryULift n) (diskIsoCubeULift n) rfl
 
 lemma diskPair.homeoCubePairULift_comm (n : ℕ) :
-    (diskBoundaryInclusion.{u} n) ≫ (diskPair.homeoCubePairULift.{u} n).hom.right =
-    (diskPair.homeoCubePairULift.{u} n).hom.left ≫ (cubeBoundaryInclusion.{u} n) := by
+    (diskBoundaryIncl.{u} n) ≫ (diskPair.homeoCubePairULift.{u} n).hom.right =
+    (diskPair.homeoCubePairULift.{u} n).hom.left ≫ (cubeBoundaryIncl.{u} n) := by
   rfl
 
 end TopCat

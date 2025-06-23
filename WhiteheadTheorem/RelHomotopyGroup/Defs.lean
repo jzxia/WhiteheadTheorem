@@ -142,7 +142,7 @@ def jStar : π_ n X a → π﹍ n X A a :=
 def bd' (f : RelGenLoop (n + 1) X A a) : π_ n A a :=
   Quotient.mk _
     ⟨ { toFun y := ⟨ (f ∘ Cube.inclToTop) y,
-          f.property.left _ ⟨n, by right; simp [Cube.splitAtLast, Cube.inclToTop]⟩ ⟩
+          f.property.left _ ⟨Fin.last _, by right; simp [Cube.splitAtLast, Cube.inclToTop]⟩ ⟩
         continuous_toFun := by
           refine Continuous.subtype_mk ?_ _
           exact f.val.continuous_toFun.comp Cube.inclToTop.continuous },

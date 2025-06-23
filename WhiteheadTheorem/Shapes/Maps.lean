@@ -6,18 +6,6 @@ import Mathlib.Topology.Category.TopCat.Basic
 open scoped Topology unitInterval CategoryTheory
 
 
-namespace unitInterval
-
-instance continuousMul : ContinuousMul I where
-  continuous_mul := by
-    apply Continuous.subtype_mk
-    exact Continuous.mul
-      (continuous_induced_dom.comp continuous_fst)
-      (continuous_induced_dom.comp continuous_snd)
-
-end unitInterval
-
-
 namespace ContinuousMap
 
 lemma mulRight_one (X : Type*) [TopologicalSpace X]

@@ -20,9 +20,9 @@ def HasHomotopyExtensionProperty {A X : Type u} [TopologicalSpace A] [Topologica
   ∀ (f : C(X, Y)) (h : C(A × I, Y)), f ∘ i = h ∘ (·, 0) →
   ∃ H : C(X × I, Y), f = H ∘ (·, 0) ∧ h = H ∘ Prod.map i id
 
-theorem TopCat.diskBoundaryInclusion_hasHEP
+theorem TopCat.diskBoundaryIncl_hasHEP
     (n : ℕ) (Y : Type u) [TopologicalSpace Y] :
-    HasHomotopyExtensionProperty (diskBoundaryInclusion.{u} n).hom Y :=
+    HasHomotopyExtensionProperty (diskBoundaryIncl.{u} n).hom Y :=
   fun f H hf ↦ ⟨HEP.Jar.homotopyExtension n f H hf,
     HEP.Jar.homotopyExtension_bottom_commutes n f H hf,
     HEP.Jar.homotopyExtension_wall_commutes n f H hf⟩
@@ -36,10 +36,10 @@ if the commutative square
   |          |
   i        eval₀
   |          |
-  v          v
+  ↓          ↓
   X ---f---> Y
 ```
-has a lift H : X -> C(I, Y).
+has a lift H : X → C(I, Y).
 -/
 class HasCurriedHEP {A X : TopCat.{u}} (i : A ⟶ X) (Y : TopCat.{u}) : Prop where
   hasLift : HasLiftingProperty i (PathSpace.eval₀ Y)
@@ -112,7 +112,8 @@ noncomputable def _root_.Limits.Cocone.ofSequence_of_hasLiftingProperty
     Limits.Cocone (Functor.ofSequence i) where
   pt := Z
   ι := NatTrans.ofSequence (fun n ↦ (app i p h f bigSq n).val) fun n ↦ by
-    simp [app]
+    simp only [app, Functor.ofSequence_obj, Functor.const_obj_obj, homOfLE_leOfHom,
+      Functor.ofSequence_map_homOfLE_succ, Functor.const_obj_map, Category.comp_id]
     generalize_proofs _ _ liftStruct   -- reuse `⋯` (an omitted proof)
     exact liftStruct.some.fac_left
 
@@ -130,8 +131,8 @@ instance HasLiftingProperty.of_colimit_ofSequence_zero :
   change X 0 ⟶ _ at h
   let ccz := Limits.Cocone.ofSequence_of_hasLiftingProperty i p h f sq -- a cocone whose point is Z
   let H := Limits.colimit.desc (Functor.ofSequence i) ccz
-  exact ⟨H, by simp [H]; rfl, by
-    simp [H]
+  exact ⟨H, by simp only [H, Functor.ofSequence_obj, Limits.colimit.ι_desc]; rfl, by
+    simp only [H]
     let ccy := ccz.postcompose p   -- a cocone whose point is Y
     let cc := Limits.getColimitCocone (Functor.ofSequence i)   -- the colimit cocone
     have uniq_f : f = cc.isColimit.desc ccy := by   -- f is a morphism of cocones
@@ -281,10 +282,10 @@ theorem HasCurriedHEP.iff_hasHomotopyExtensionProperty {A X : TopCat.{u}}
         fac_left := by ext a t; simp; change _ = h.hom.uncurry ⟨a, t⟩; rw [H2]; simp
         fac_right := by ext x; simp; rw [H1]; simp } ⟩ ⟩ ⟩
 
-instance TopCat.diskBoundaryInclusion_hasCurriedHEP (n : ℕ) (Y : TopCat.{u}) :
-    HasCurriedHEP (diskBoundaryInclusion.{u} n) Y :=
-  HasCurriedHEP.iff_hasHomotopyExtensionProperty (diskBoundaryInclusion.{u} n) Y |>.mpr <|
-    TopCat.diskBoundaryInclusion_hasHEP n Y
+instance TopCat.diskBoundaryIncl_hasCurriedHEP (n : ℕ) (Y : TopCat.{u}) :
+    HasCurriedHEP (diskBoundaryIncl.{u} n) Y :=
+  HasCurriedHEP.iff_hasHomotopyExtensionProperty (diskBoundaryIncl.{u} n) Y |>.mpr <|
+    TopCat.diskBoundaryIncl_hasHEP n Y
 
 /--
 If
@@ -338,9 +339,9 @@ instance IsCofibration.of_colimit_ofSequence
     (n : ℕ) : IsCofibration (Limits.colimit.ι (Functor.ofSequence i) n) :=
   ⟨by infer_instance⟩
 
-instance TopCat.diskBoundaryInclusion_isCofibration (n : ℕ) :
-    IsCofibration (diskBoundaryInclusion.{u} n) where
-  hasCurriedHEP := by apply diskBoundaryInclusion_hasCurriedHEP
+instance TopCat.diskBoundaryIncl_isCofibration (n : ℕ) :
+    IsCofibration (diskBoundaryIncl.{u} n) where
+  hasCurriedHEP := by apply diskBoundaryIncl_hasCurriedHEP
 
 lemma CategoryTheory.IsPushout.isCofibration {A B X Y : TopCat.{u}}
     {f : A ⟶ B} {i : A ⟶ X} {j : B ⟶ Y} {F : X ⟶ Y}
@@ -387,11 +388,11 @@ related: https://math.stackexchange.com/questions/381527/the-product-of-a-cofibr
 instance IsCofibration.prod_unitInterval {A X : TopCat.{u}}
     (i : A ⟶ X) [cof : IsCofibration i] :
     IsCofibration <| TopCat.ofHom <| i.hom.prodMap (ContinuousMap.id I) := by
-  change IsCofibration (topBinaryProductRight' I |>.map i)
+  change IsCofibration (topBinProdRight' I |>.map i)
   constructor -- IsCofibration.hasCurriedHEP
   intro Y
   constructor -- HasCurriedHEP.hasLift
-  apply (Adjunction.hasLiftingProperty_iff (topBinaryProductRightAdjunctionExp' I) i _).mpr
+  apply (Adjunction.hasLiftingProperty_iff (topBinProdRightAdjExp' I) i _).mpr
   constructor -- HasLiftingProperty.sq_hasLift
   intro f g sq
   have bigSq : CommSq (f ≫ TopCat.ofHom ContinuousMap.curriedArgSwap)
@@ -416,15 +417,15 @@ lemma HasLiftingProperty.of_comp_iso {C : Type*} [Category C] {A B B' X Y : C}
     (h : HasLiftingProperty i p) : HasLiftingProperty (i ≫ iso.hom) p :=
   HasLiftingProperty.of_comp_left i iso.hom p
 
-instance skInclusionToNextSk_isCofibration (X : RelCWComplex.{u}) (n : ℕ) :
-    IsCofibration (X.skInclusionToNextSk n) := by
+instance skInclSucc_isCofibration (X : RelCWComplex.{u}) (n : ℕ) :
+    IsCofibration (X.skInclSucc n) := by
   refine @IsCofibration.of_comp_left _ _ _ _ _ ?_ (by infer_instance) -- iso is cofibration
   apply (X.attachCells n).pushout_isPushout.isCofibration
   infer_instance -- sigma map is cofibration
 
-theorem skInclusion_isCofibration
-    (X : RelCWComplex.{u}) (n : ℕ) : IsCofibration (X.skInclusion n) := by
-  unfold skInclusion
+theorem skIncl_isCofibration
+    (X : RelCWComplex.{u}) (n : ℕ) : IsCofibration (X.skIncl n) := by
+  unfold skIncl
   infer_instance -- inclusion into a sequential colimit is cofibration
                  -- (by `IsCofibration.of_colimit_ofSequence`)
 

@@ -21,27 +21,27 @@ open scoped Topology unitInterval
   𝔻 n ----Φ--> I^ (Fin n) ---f---> Y
 ```
 -/
-instance Cube.boundaryInclusion_isCofibration (n : ℕ) :
-    IsCofibration <| TopCat.ofHom (Cube.boundaryInclusion n) where
+instance Cube.boundaryIncl_isCofibration (n : ℕ) :
+    IsCofibration <| TopCat.ofHom (Cube.boundaryIncl n) where
   hasCurriedHEP _ :=
     ⟨HasLiftingProperty.of_arrow_iso_left (diskPair.homeoCubePair n) _⟩
 
-instance Cube.boundaryInclusion_prod_unitInterval_isCofibration (n : ℕ) :
-    IsCofibration <| TopCat.ofHom <| (Cube.boundaryInclusion n).prodMap (ContinuousMap.id I) := by
-  change IsCofibration <| TopCat.ofHom <| (TopCat.ofHom <| Cube.boundaryInclusion n).hom.prodMap _
+instance Cube.boundaryIncl_prod_unitInterval_isCofibration (n : ℕ) :
+    IsCofibration <| TopCat.ofHom <| (Cube.boundaryIncl n).prodMap (ContinuousMap.id I) := by
+  change IsCofibration <| TopCat.ofHom <| (TopCat.ofHom <| Cube.boundaryIncl n).hom.prodMap _
   apply IsCofibration.prod_unitInterval
 
-theorem Cube.boundaryInclusion_hasHEP
+theorem Cube.boundaryIncl_hasHEP
     (n : ℕ) (Y : Type) [TopologicalSpace Y] :
-    HasHomotopyExtensionProperty (Cube.boundaryInclusion n) Y :=
+    HasHomotopyExtensionProperty (Cube.boundaryIncl n) Y :=
   IsCofibration.iff_hasHomotopyExtensionProperty _ |>.mp
-    (Cube.boundaryInclusion_isCofibration n) (TopCat.of Y)
+    (Cube.boundaryIncl_isCofibration n) (TopCat.of Y)
 
-theorem Cube.boundaryInclusion_prod_unitInterval_hasHEP
+theorem Cube.boundaryIncl_prod_unitInterval_hasHEP
     (n : ℕ) (Y : Type) [TopologicalSpace Y] :
-    HasHomotopyExtensionProperty ((Cube.boundaryInclusion n).prodMap (ContinuousMap.id I)) Y :=
+    HasHomotopyExtensionProperty ((Cube.boundaryIncl n).prodMap (ContinuousMap.id I)) Y :=
   IsCofibration.iff_hasHomotopyExtensionProperty _ |>.mp
-     (Cube.boundaryInclusion_prod_unitInterval_isCofibration n) (TopCat.of Y)
+     (Cube.boundaryIncl_prod_unitInterval_isCofibration n) (TopCat.of Y)
 
 
 /-!
@@ -52,26 +52,26 @@ namespace TopCat
 
 universe u
 
-instance cubeBoundaryInclusion_isCofibration (n : ℕ) :
-    IsCofibration (cubeBoundaryInclusion.{u} n) where
+instance cubeBoundaryIncl_isCofibration (n : ℕ) :
+    IsCofibration (cubeBoundaryIncl.{u} n) where
   hasCurriedHEP _ :=
     ⟨HasLiftingProperty.of_arrow_iso_left (diskPair.homeoCubePairULift n) _⟩
 
-instance cubeBoundaryInclusion_prod_unitInterval_isCofibration (n : ℕ) :
+instance cubeBoundaryIncl_prod_unitInterval_isCofibration (n : ℕ) :
     IsCofibration <| TopCat.ofHom <|
-    (cubeBoundaryInclusion.{u} n).hom.prodMap (ContinuousMap.id I) := by
+    (cubeBoundaryIncl.{u} n).hom.prodMap (ContinuousMap.id I) := by
   apply IsCofibration.prod_unitInterval
 
-theorem cubeBoundaryInclusion_hasHEP
+theorem cubeBoundaryIncl_hasHEP
     (n : ℕ) (Y : Type u) [TopologicalSpace Y] :
-    HasHomotopyExtensionProperty (cubeBoundaryInclusion.{u} n).hom Y :=
+    HasHomotopyExtensionProperty (cubeBoundaryIncl.{u} n).hom Y :=
   IsCofibration.iff_hasHomotopyExtensionProperty _ |>.mp
-    (cubeBoundaryInclusion_isCofibration n) (TopCat.of Y)
+    (cubeBoundaryIncl_isCofibration n) (TopCat.of Y)
 
-theorem cubeBoundaryInclusion_prod_unitInterval_hasHEP
+theorem cubeBoundaryIncl_prod_unitInterval_hasHEP
     (n : ℕ) (Y : Type u) [TopologicalSpace Y] :
-    HasHomotopyExtensionProperty ((cubeBoundaryInclusion n).hom.prodMap (ContinuousMap.id I)) Y :=
+    HasHomotopyExtensionProperty ((cubeBoundaryIncl n).hom.prodMap (ContinuousMap.id I)) Y :=
   IsCofibration.iff_hasHomotopyExtensionProperty _ |>.mp
-     (cubeBoundaryInclusion_prod_unitInterval_isCofibration n) (TopCat.of Y)
+     (cubeBoundaryIncl_prod_unitInterval_isCofibration n) (TopCat.of Y)
 
 end TopCat

@@ -1,5 +1,6 @@
 import WhiteheadTheorem.HEP.Cube
 import WhiteheadTheorem.Shapes.Cube
+import WhiteheadTheorem.Shapes.UnitInterval
 import Mathlib.Analysis.Convex.Basic
 import Mathlib.Topology.Homotopy.Contractible
 
@@ -37,19 +38,23 @@ lemma inclToBot_discardLast_mem_boundary {n : ℕ} (y : I^ Fin (n + 1)) :
 lemma inclToBot_discardLast_eq_of {n : ℕ} (y : I^ Fin (n + 1))
     (hz : y (Fin.last n) = 0) : inclToBot (discardLast y) = y := by
   ext i; simp [discardLast, inclToBot]
-  split_ifs with hi; rw [hi, hz]; simp [homeoNeqLast, discardLast]
+  split_ifs with hi
+  · rw [hi, hz]
+  · rfl
 
 lemma inclToBoundaryJarBot_discardLast_eq_of {n : ℕ} (y : I^ Fin (n + 1))
     (hz : y (Fin.last n) = 0) : inclToBoundaryJarBot (discardLast y) = y := by
   ext i; simp [discardLast, inclToBoundaryJarBot, inclToBot]
-  split_ifs with hi; rw [hi, hz]; simp [homeoNeqLast, discardLast]
+  split_ifs with hi
+  · rw [hi, hz]
+  · rfl
 
 ------------------
 
 lemma splitAtLastComm_inclToSides_eq {n : ℕ} :   -- (∂I^n) × I ↦ (I^ Fin n) × I
-    splitAtLastComm ∘ inclToSides = Prod.map (boundaryInclusion n) id := by
+    splitAtLastComm ∘ inclToSides = Prod.map (boundaryIncl n) id := by
   ext ⟨y, t⟩ i
-  repeat { simp [splitAtLastComm, splitAtLast, boundaryInclusion,
+  repeat { simp [splitAtLastComm, splitAtLast, boundaryIncl,
     inclToSides, inclToBoundaryJarSides] }
 
 /-- Project the $(n+1)$-dimensional cube to its boundary `∂I^(n+1)`.
@@ -86,7 +91,7 @@ lemma inclToSides_projToSides_eq_of {n : ℕ} (y : I^ Fin (n + 1 + 1))
   rw [this]
   ext i
   simp [inclToSides, inclToBoundaryJarSides, splitAtLastComm, splitAtLast]
-  simp [boundaryInclusion, splitAtLastComm, splitAtLast]
+  simp [boundaryIncl, splitAtLastComm, splitAtLast]
   split_ifs with hi
   rw [hi]; simp only
 
@@ -102,23 +107,23 @@ lemma inclToBoundaryJarSides_projToSides_eq_of {n : ℕ} (y : I^ Fin (n + 1 + 1)
   simp [inclToBoundaryJarSides, splitAtLastComm, splitAtLast]
   split_ifs with hi
   · rw [hi]
-  · simp [boundaryInclusion]
+  · simp [boundaryIncl]
 
 
 section strongDeformRetrToBoundaryJar
 
-/-- A  retraction from `I^n` to `∂I^n`, for `n ≥ 1`. -/
+/-- A  retraction from `I^n` to `⊔I^n`, for `n ≥ 1`. -/
 noncomputable def retrToBoundaryJar (n : ℕ) :
     { r' : C(Fin (n + 1) → I, ⊔I^n + 1) // ∀ y ∈ ⊔I^(n+1), r' y = y } := by
   let f : C(I^ Fin n, ⊔I^(n + 1)) := inclToBoundaryJarBot
   let h : C((∂I^n) × I, ⊔I^(n + 1)) := inclToBoundaryJarSides
-  have : f ∘ (boundaryInclusion n) = h ∘ fun x ↦ (x, 0) := by
+  have : f ∘ (boundaryIncl n) = h ∘ fun x ↦ (x, 0) := by
     ext x i
-    simp [boundaryInclusion, f, h, inclToBoundaryJarBot, inclToBoundaryJarSides, inclToBot,
+    simp [boundaryIncl, f, h, inclToBoundaryJarBot, inclToBoundaryJarSides, inclToBot,
           splitAtLastComm, splitAtLast]
-  have hep := Cube.boundaryInclusion_hasHEP n (⊔I^(n + 1)) f h this
+  have hep := Cube.boundaryIncl_hasHEP n (⊔I^(n + 1)) f h this
   let H := Classical.choose hep
-  have spec : (f = H ∘ fun x ↦ (x, 0)) ∧ h = H ∘ Prod.map (boundaryInclusion n) id :=
+  have spec : (f = H ∘ fun x ↦ (x, 0)) ∧ h = H ∘ Prod.map (boundaryIncl n) id :=
     Classical.choose_spec hep
   let r' : C(I^ Fin (n + 1), ⊔I^(n+1)) := H.comp (toContinuousMap splitAtLastComm)
   exact ⟨r', fun y hy ↦ by
@@ -144,17 +149,17 @@ noncomputable def retrToBoundaryJar (n : ℕ) :
           apply inclToBoundaryJarSides_projToSides_eq_of y
           exact hy' ⟩
 
-/-- A strong deformation retraction from `I^n` to `∂I^n`, for `n ≥ 1`.
+/-- A strong deformation retraction from `I^n` to `⊔I^n`, for `n ≥ 1`.
 I'm writing down the formula for each coordinate because:
   - `failed to synthesize ContinuousSMul (↑I) (Fin (n + 1) → ↑I)`
   - Using `Convex` requires going to a subset of ℝ^(n+1) and back
     (although `Convex ℝ I` is very helpful) -/
 noncomputable def strongDeformRetrToBoundaryJar (n : ℕ) :
-    StrongDeformRetr (I^ Fin (n + 1)) (⊔I^(n+1)) :=
+    StrongDeformRetr (I^ Fin (n + 1)) (⊔I^ (n + 1)) :=
   let ⟨r', r'_restrict⟩ := retrToBoundaryJar n
-  { r := (boundaryJarInclusion (n + 1)).comp r'
+  { r := (boundaryJarIncl (n + 1)).comp r'
     r_range := fun y hy ↦ by
-      simp [Set.mem_range, boundaryJarInclusion] at hy
+      simp [Set.mem_range, boundaryJarIncl] at hy
       obtain ⟨z, hz⟩ := hy; rw [← hz]; simp only [Subtype.coe_prop]
     H :=
       { toFun := fun ⟨t, y⟩ ↦ fun i ↦
@@ -176,7 +181,7 @@ noncomputable def strongDeformRetrToBoundaryJar (n : ℕ) :
         map_one_left y := by
           simp only [unitInterval.symm_one, Set.Icc.coe_zero, smul_eq_mul, zero_mul,
             Set.Icc.coe_one, one_mul, zero_add, Subtype.coe_eta, ContinuousMap.comp_apply]
-          simp only [boundaryJarInclusion, ContinuousMap.coe_mk]
+          simp only [boundaryJarIncl, ContinuousMap.coe_mk]
         prop' t y hy := by
           ext i
           simp only [unitInterval.coe_symm_eq, smul_eq_mul, ContinuousMap.coe_mk,
@@ -234,18 +239,18 @@ lemma deformRetrToBot_apply_sides {n : ℕ}
 /-- Deformation retraction from `⊔I^(n + 1)` to its bottom face -/
 def boundaryJarDeformRetrToBot {n : ℕ} : C(I × ⊔I^(n + 1), ⊔I^(n + 1)) :=
   let f₀ : C(I × ⊔I^(n + 1), I × I^ Fin (n + 1)) :=
-    (ContinuousMap.id _).prodMap <| boundaryJarInclusion (n + 1)
+    (ContinuousMap.id _).prodMap <| boundaryJarIncl (n + 1)
   { toFun ty := ⟨deformRetrToBot (f₀ ty), by
       obtain ⟨t, ⟨y, hy⟩⟩ := ty
       -- simp? [f₀, deformRetrToBot]
       obtain hbot | hsides := mem_boundaryJar_iff_splitAtLast.mp hy
-      · simp only [boundaryJarInclusion, ContinuousMap.prodMap_apply, ContinuousMap.coe_id,
+      · simp only [boundaryJarIncl, ContinuousMap.prodMap_apply, ContinuousMap.coe_id,
           ContinuousMap.coe_mk, Prod.map_apply, id_eq, f₀]
         rw [splitAtLast_fst_eq] at hbot
         have := deformRetrToBot_apply_bot t hbot
         apply mem_boundaryJar_of_exists_eq_zero
         use Fin.last n
-      · simp only [boundaryJarInclusion, ContinuousMap.prodMap_apply, ContinuousMap.coe_id,
+      · simp only [boundaryJarIncl, ContinuousMap.prodMap_apply, ContinuousMap.coe_id,
           ContinuousMap.coe_mk, Prod.map_apply, id_eq, f₀]
         have := deformRetrToBot_apply_sides t hsides
         exact mem_boundaryJar_iff_splitAtLast.mpr <| Or.inr this ⟩
@@ -253,11 +258,11 @@ def boundaryJarDeformRetrToBot {n : ℕ} : C(I × ⊔I^(n + 1), ⊔I^(n + 1)) :=
 
 def hequivBoundaryJar {n : ℕ} : (I^ Fin n) ≃ₕ ⊔I^(n + 1) where
   toFun := inclToBoundaryJarBot
-  invFun := discardLast.comp (boundaryJarInclusion (n + 1))
+  invFun := discardLast.comp (boundaryJarIncl (n + 1))
   left_inv := by
     apply ContinuousMap.Homotopic.of_eq
     ext y i
-    simp only [discardLast, boundaryJarInclusion, inclToBoundaryJarBot, inclToBot, ne_eq,
+    simp only [discardLast, boundaryJarIncl, inclToBoundaryJarBot, inclToBot, ne_eq,
       ContinuousMap.coe_mk, ContinuousMap.comp_assoc, ContinuousMap.comp_apply,
       Homeomorph.funSplitAt_symm_apply, Fin.natCast_eq_last, ContinuousMap.id_apply]
     split
@@ -265,12 +270,12 @@ def hequivBoundaryJar {n : ℕ} : (I^ Fin n) ≃ₕ ⊔I^(n + 1) where
       change i.castSucc = _ at hi
       exfalso
       exact (Fin.castSucc_ne_last i) hi
-    · simp only [homeoNeqLast, ne_eq, Fin.coe_eq_castSucc, Homeomorph.piCongr_apply,
-        Equiv.coe_fn_symm_mk, Fin.eta, Homeomorph.refl_apply, id_eq]
+    · simp only [homeoNeqLast, ne_eq, Homeomorph.piCongr_apply]
+      rfl
   right_inv := Nonempty.intro <|
     { toContinuousMap := boundaryJarDeformRetrToBot
       map_zero_left y := by
-        unfold boundaryJarDeformRetrToBot inclToBoundaryJarBot discardLast boundaryJarInclusion
+        unfold boundaryJarDeformRetrToBot inclToBoundaryJarBot discardLast boundaryJarIncl
         simp only [ContinuousMap.prodMap_apply, ContinuousMap.coe_id, ContinuousMap.coe_mk,
           Prod.map_apply, id_eq, ContinuousMap.comp_apply, Subtype.mk.injEq]
         unfold deformRetrToBot inclToBot
@@ -285,8 +290,9 @@ def hequivBoundaryJar {n : ℕ} : (I^ Fin n) ≃ₕ ⊔I^(n + 1) where
         ext i
         simp only [Homeomorph.piCongr_apply, Equiv.coe_fn_symm_mk, Fin.eta, Homeomorph.refl_apply,
           id_eq]
+        rfl
       map_one_left y := by
-        unfold boundaryJarDeformRetrToBot boundaryJarInclusion deformRetrToBot
+        unfold boundaryJarDeformRetrToBot boundaryJarIncl deformRetrToBot
         simp only [ContinuousMap.prodMap_apply, ContinuousMap.coe_id, ContinuousMap.coe_mk,
           Prod.map_apply, id_eq, ContinuousMap.comp_apply, ContinuousMap.coe_coe, mul_one,
           Prod.mk.eta, Homeomorph.symm_apply_apply, Subtype.coe_eta, ContinuousMap.id_apply] }

@@ -16,8 +16,8 @@ def ContinuousMap.uncurry_curry [LocallyCompactSpace Y]
 def ContinuousMap.curry_uncurry [LocallyCompactSpace Y]
   (f : C(X, C(Y, Z))) : f = f.uncurry.curry := rfl
 
-/-- An auxiliary lemma only used for showing the naturality of `topBinaryProductRightAdjunctionExp` -/
-lemma TopCat.exp_homEquiv_naturality_left [LocallyCompactSpace X]
+/-- An auxiliary lemma only used for showing the naturality of `topBinProdRightAdjExp` -/
+lemma TopCat.exp_homEquiv_naturality_right [LocallyCompactSpace X]
     (f : C(Y', Y)) (g : C(Y, C(X, Z))) :
   (g.comp f).uncurry = g.uncurry.comp (f.prodMap (ContinuousMap.id X)) := rfl
 
@@ -28,50 +28,80 @@ namespace TopCat
 
 /-- The functor `TopCat.of (· × X)` (taking the topological binary product, with `X` on the right)
 from `TopCat` to `TopCat` -/
-abbrev topBinaryProductRight (X : TopCat.{u}) : TopCat ⥤ TopCat where
-  obj Y := of (Y × X)
-  map {Y Z} f := ofHom (f.hom.prodMap (ContinuousMap.id X))
+abbrev topBinProdRight (X : TopCat.{u}) : TopCat ⥤ TopCat where
+  obj Y := TopCat.of (Y × X)
+  map {Y Z} f := TopCat.ofHom (f.hom.prodMap (ContinuousMap.id X))
 
 /-- The exponentiation functor `C(X, ·)` from `TopCat` to `TopCat` -/
 abbrev exp (X : TopCat.{u}) : TopCat ⥤ TopCat where
-  obj Y := of C(X, Y)
-  map {Y Z} f := ofHom ⟨fun g ↦ f.hom.comp g, f.hom.continuous_postcomp⟩
+  obj Y := TopCat.of C(X, Y)
+  map {Y Z} f := TopCat.ofHom ⟨fun g ↦ f.hom.comp g, f.hom.continuous_postcomp⟩
 
-noncomputable def topBinaryProductRightAdjunctionExp (X : TopCat.{u}) [LocallyCompactSpace X] :
-    topBinaryProductRight X ⊣ exp X :=
+noncomputable def topBinProdRightAdjExp (X : TopCat.{u}) [LocallyCompactSpace X] :
+    topBinProdRight X ⊣ exp X :=
   Adjunction.mkOfHomEquiv
   { homEquiv Y Z :=
-    { toFun f := ofHom f.hom.curry
-      invFun f := ofHom f.hom.uncurry
-      left_inv _ := by simp [← ContinuousMap.uncurry_curry _]
-      right_inv _ := by simp [← ContinuousMap.curry_uncurry _] }
-    homEquiv_naturality_left_symm {Y' Y Z} f g := by simp [exp_homEquiv_naturality_left]
-    homEquiv_naturality_right {Y Z Z'} f g := by simp; rfl }
+    { toFun f := TopCat.ofHom f.hom.curry
+      invFun f := TopCat.ofHom f.hom.uncurry
+      left_inv _ := by simp only [hom_ofHom, ← ContinuousMap.uncurry_curry _, ofHom_hom]
+      right_inv _ := by simp only [hom_ofHom, ← ContinuousMap.curry_uncurry _, ofHom_hom] }
+    homEquiv_naturality_left_symm {Y' Y Z} f g := by
+      simp only [Equiv.coe_fn_symm_mk, hom_comp, TopCat.exp_homEquiv_naturality_right, ofHom_comp]
+    homEquiv_naturality_right {Y Z Z'} f g := by
+      simp only [Equiv.coe_fn_mk, hom_comp]; rfl }
 
-/-- Same as `topBinaryProductRight`, except that `X` is not an object in `TopCat`,
+/-- Same as `topBinProdRight`, except that `X` is not an object in `TopCat`,
 but simply a topological space -/
-abbrev topBinaryProductRight' (X : Type u) [TopologicalSpace X] : TopCat ⥤ TopCat where
-  obj Y := of (Y × X)
+abbrev topBinProdRight' (X : Type u) [TopologicalSpace X] : TopCat ⥤ TopCat where
+  obj Y := TopCat.of (Y × X)
   map {Y Z} f := ofHom (f.hom.prodMap (ContinuousMap.id X))
+
+abbrev topBinProdLeft' (X : Type u) [TopologicalSpace X] : TopCat ⥤ TopCat where
+  obj Y := TopCat.of (X × Y)
+  map {Y Z} f := ofHom ((ContinuousMap.id X).prodMap f.hom)
 
 /-- Same as `exp`, except that `X` is not an object in `TopCat`, but simply a topological space -/
 abbrev exp' (X : Type u) [TopologicalSpace X] : TopCat ⥤ TopCat where
-  obj Y := of C(X, Y)
-  map {Y Z} f := ofHom ⟨fun g ↦ f.hom.comp g, f.hom.continuous_postcomp⟩
+  obj Y := TopCat.of C(X, Y)
+  map {Y Z} f := TopCat.ofHom ⟨fun g ↦ f.hom.comp g, f.hom.continuous_postcomp⟩
 
-/-- Same as `topBinaryProductRightAdjunctionExp`,
+/-- Same as `topBinProdRightAdjExp`,
 except that `X` is not an object in `TopCat`, but simply a topological space -/
-noncomputable def topBinaryProductRightAdjunctionExp'
+noncomputable def topBinProdRightAdjExp'
     (X : Type u) [TopologicalSpace X] [LocallyCompactSpace X] :
-    topBinaryProductRight' X ⊣ exp' X :=
+    topBinProdRight' X ⊣ exp' X :=
   Adjunction.mkOfHomEquiv
   { homEquiv Y Z :=
-    { toFun f := ofHom f.hom.curry
-      invFun f := ofHom f.hom.uncurry
-      left_inv _ := by simp [← ContinuousMap.uncurry_curry _]
-      right_inv _ := by simp [← ContinuousMap.curry_uncurry _] }
-    homEquiv_naturality_left_symm {Y' Y Z} f g := by simp [exp_homEquiv_naturality_left]
-    homEquiv_naturality_right {Y Z Z'} f g := by simp; rfl }
+    { toFun f := TopCat.ofHom f.hom.curry
+      invFun f := TopCat.ofHom f.hom.uncurry
+      left_inv _ := by simp only [hom_ofHom, ← ContinuousMap.uncurry_curry _, ofHom_hom]
+      right_inv _ := by simp only [hom_ofHom, ← ContinuousMap.curry_uncurry _, ofHom_hom] }
+    homEquiv_naturality_left_symm {Y' Y Z} f g := by
+      simp only [Equiv.coe_fn_symm_mk, hom_comp, TopCat.exp_homEquiv_naturality_right, ofHom_comp]
+    homEquiv_naturality_right {Y Z Z'} f g := by
+      simp only [Equiv.coe_fn_mk, hom_comp]; rfl }
+
+noncomputable def topBinProdLeftAdjExp'
+    (X : Type u) [TopologicalSpace X] [LocallyCompactSpace X] :
+    topBinProdLeft' X ⊣ exp' X :=
+  Adjunction.mkOfHomEquiv
+  { homEquiv Y Z :=
+      let i : TopCat.of (X × Y) ≅ TopCat.of (Y × X) := isoOfHomeo (Homeomorph.prodComm X Y)
+      { toFun f := TopCat.ofHom (i.inv ≫ f).hom.curry
+        invFun f := i.hom ≫ TopCat.ofHom f.hom.uncurry
+        left_inv _ := by
+          simp only [hom_comp, hom_ofHom, ← ContinuousMap.uncurry_curry _, ofHom_comp, ofHom_hom,
+            Iso.hom_inv_id_assoc]
+        right_inv _ := by
+          simp only [Iso.inv_hom_id_assoc, hom_ofHom, ← ContinuousMap.curry_uncurry _, ofHom_hom] }
+    homEquiv_naturality_left_symm {Y' Y Z} f g := by
+      simp only [isoOfHomeo_inv, Homeomorph.prodComm_symm, hom_comp, hom_ofHom, isoOfHomeo_hom,
+        Equiv.coe_fn_symm_mk, exp_homEquiv_naturality_right, ofHom_comp]
+      rfl
+    homEquiv_naturality_right {Y Z Z'} f g := by
+      simp only [isoOfHomeo_inv, Homeomorph.prodComm_symm, hom_comp, hom_ofHom, isoOfHomeo_hom,
+        Equiv.coe_fn_mk, ContinuousMap.comp_assoc]
+      rfl }
 
 end TopCat
 
@@ -103,11 +133,40 @@ def curryRight (f : C(A × B, Y)) (a : A) : C(B, Y) where
   toFun b := f ⟨a, b⟩
   continuous_toFun := f.continuous.curry_right
 
+lemma eq_of_curry_eq {f g : C(A × B, Y)}
+    (e : f.curry = g.curry) : f = g := by
+  ext ⟨a, b⟩
+  replace e := congrFun (congrArg ContinuousMap.toFun e) a
+  replace e := congrFun (congrArg ContinuousMap.toFun e) b
+  exact e
+
+lemma eq_of_argSwap_curry_eq {f g : C(A × B, Y)}
+    (e : f.argSwap.curry = g.argSwap.curry) : f = g := by
+  ext ⟨a, b⟩
+  replace e := congrFun (congrArg ContinuousMap.toFun e) b
+  replace e := congrFun (congrArg ContinuousMap.toFun e) a
+  exact e
+
 end ContinuousMap
 
 ---------------------------------------------------------------
 
 open scoped unitInterval
+
+namespace TopCat
+
+variable {A B : Type*} [TopologicalSpace A] [TopologicalSpace B]
+
+lemma hom_eq_of_curry_eq {Y : TopCat} {f g : TopCat.of (A × B) ⟶ Y}
+    (e : f.hom.curry = g.hom.curry) : f = g :=
+  TopCat.hom_ext_iff.mpr <| ContinuousMap.eq_of_curry_eq e
+
+lemma hom_eq_of_argSwap_curry_eq {Y : TopCat} {f g : TopCat.of (A × B) ⟶ Y}
+    (e : f.hom.argSwap.curry = g.hom.argSwap.curry) : f = g :=
+  TopCat.hom_ext_iff.mpr <| ContinuousMap.eq_of_argSwap_curry_eq e
+
+end TopCat
+
 
 example {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
   [LocallyCompactSpace X] : ContinuousEval C(X, Y) X Y := by infer_instance

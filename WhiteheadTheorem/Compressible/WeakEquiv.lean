@@ -27,8 +27,8 @@ then the inclusion map `MapCyl.domIncl φ` from `B` to the mapping cylinder of `
 is compressible w.r.t. the inclusion map `A ⟶ X` from the $(-1)$-skeleton to `X`. -/
 theorem IsCompressible.relCWComplex_of_isWeakHomotopyEquiv
     (hf : IsWeakHomotopyEquiv f.hom) (X : RelCWComplex) :
-    IsCompressible (X.skInclusion 0) (MapCyl.domIncl f) := by
-  apply IsCompressible.relCWComplex_of_diskBoundaryInclusion
+    IsCompressible (X.skIncl 0) (MapCyl.domIncl f) := by
+  apply IsCompressible.relCWComplex_of_diskBoundaryIncl
   intro n
   apply disk.isCompressible_mapCyl_domIncl_of_isWeakHomotopyEquiv
   exact hf
@@ -56,9 +56,9 @@ theorem CWComplex_induced_map_surjective
     ∃ g' : X.toTopCat ⟶ B, (g' ≫ f).hom.Homotopic g.hom := by
   have com := IsCompressible.relCWComplex_of_isWeakHomotopyEquiv hf X.toRelCWComplex
   let z : X.sk 0 ⟶ B :=
-    letI := X.isEmpty_sk_zero; ofHom ⟨fun x ↦ isEmptyElim x, by fun_prop⟩
+    letI := X.isEmpty_sk_zero; ofHom ⟨fun x ↦ isEmptyElim x, continuous_of_discreteTopology⟩
   let G : X.toTopCat ⟶ MapCyl f := g ≫ MapCyl.codIncl f
-  have sq : CommSq z (X.skInclusion 0) (MapCyl.domIncl f) G :=
+  have sq : CommSq z (X.skIncl 0) (MapCyl.domIncl f) G :=
     ⟨by ext x; have := X.isEmpty_sk_zero; exact isEmptyElim x⟩
   let l := com.sq_hasLift sq |>.hasLift.some
   use l.l
@@ -122,8 +122,10 @@ theorem CWComplex_induced_map_injective
           | inl h0 => subst h0; simp only [one_div, inv_nonneg, Nat.ofNat_nonneg]
           | inr h1 => subst h1; simp only [one_ne_zero, one_div, (by norm_num : ¬((1 : ℝ) ≤ 2⁻¹))]
         rw [this]
-        apply Continuous.if_le
-        any_goals fun_prop
+        refine Continuous.if_le
+          ((Hom.hom g₀).continuous.comp continuous_snd)
+          ((Hom.hom g₁).continuous.comp continuous_snd)
+          (continuous_subtype_val.comp continuous_fst) continuous_const ?_
         intro x hx
         simp_all only [Category.assoc, TopCat.hom_comp, ContinuousMap.comp_assoc, hom_ofHom, one_div]
         obtain ⟨⟨val, property⟩, snd⟩ := x

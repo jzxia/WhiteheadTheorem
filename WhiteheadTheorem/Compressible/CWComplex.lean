@@ -1,14 +1,14 @@
-import WhiteheadTheorem.CWComplex.IProd
+import WhiteheadTheorem.CWComplex.IProd.Iso
 import WhiteheadTheorem.HEP.Cofibration
 import WhiteheadTheorem.Compressible.Defs
 
 /-!
 This file proves that if a map is compressible with respect to
-`TopCat.diskBoundaryInclusion n : ∂𝔻 n ⟶ 𝔻 n`
+`TopCat.diskBoundaryIncl n : ∂𝔻 n ⟶ 𝔻 n`
 (inclusion from the boundary of a disk to the disk),
 then it is compressible with respect to the inclusion map
 from the `-1`-skeleton of any relative CW-complex to the relative CW-complex.
-This is the theorem `IsCompressible.relCWComplex_of_diskBoundaryInclusion`.
+This is the theorem `IsCompressible.relCWComplex_of_diskBoundaryIncl`.
 
 Some proofs are similar to the ones in `Mathlib.CategoryTheory.LiftingProperties.Limits`
 -/
@@ -192,30 +192,30 @@ private structure FStruct
   /-- $F_n$ -/
   F : X.toTopCat ⟶ Y
   /-- The maps $f_n$ and $F_n$ agree on `X.sk n` -/
-  sq : CommSq f (X.skInclusionToNextSk n) j (X.skInclusion (n + 1) ≫ F)
+  sq : CommSq f (X.skInclSucc n) j (X.skIncl (n + 1) ≫ F)
   /-- The structure containing the lift `l.l : X.sk (n + 1)  ⟶ B`, i.e., the next `f` -/
   l : LiftStructUpToRelHomotopy sq
   /-- The commutative square for constructing the homotopy from $F_n$ to $F_{n+1}$ -/
-  hep_sq : CommSq l.curriedH (X.skInclusion (n + 1)) (PathSpace.eval₀ Y) F
+  hep_sq : CommSq l.curriedH (X.skIncl (n + 1)) (PathSpace.eval₀ Y) F
   /-- The structure containing the homotopy `hep_l.l` from $F_n$ to $F_{n+1}$ -/
   hep_l : hep_sq.LiftStruct
 
 variable {X : RelCWComplex.{u}} {B Y : TopCat.{u}} {j : B ⟶ Y}
-  (jcom_sk : ∀ n, IsCompressible (X.skInclusionToNextSk n) j)
+  (jcom_sk : ∀ n, IsCompressible (X.skInclSucc n) j)
   {F₀ : X.toTopCat ⟶ Y} {f₀ : X.sk 0 ⟶ B}
-  (sq : CommSq f₀ (X.skInclusion 0) j F₀)
+  (sq : CommSq f₀ (X.skIncl 0) j F₀)
 
 private noncomputable def F : ∀ n : ℕ, FStruct X j n
   | 0 => by
-      let sq' : CommSq f₀ (X.skInclusionToNextSk 0) j (X.skInclusion (1) ≫ F₀) :=
+      let sq' : CommSq f₀ (X.skInclSucc 0) j (X.skIncl 1 ≫ F₀) :=
         ⟨by
           rw [sq.w, ← Category.assoc]
           congr 1
           apply Eq.symm
-          exact Limits.colimit.w (Functor.ofSequence fun n ↦ (X.attachCells n).inclusion) <|
+          exact Limits.colimit.w (Functor.ofSequence fun n ↦ (X.attachCells n).incl) <|
             homOfLE (by omega : 0 ≤ 1) ⟩
       let l' := jcom_sk 0 |>.sq_hasLift sq' |>.hasLift.some
-      have hep_sq : CommSq l'.curriedH (X.skInclusion 1) (PathSpace.eval₀ Y) F₀ :=
+      have hep_sq : CommSq l'.curriedH (X.skIncl 1) (PathSpace.eval₀ Y) F₀ :=
         ⟨l'.curriedH_apply_zero⟩
       exact
         { f := f₀
@@ -223,18 +223,18 @@ private noncomputable def F : ∀ n : ℕ, FStruct X j n
           sq := sq'
           l := l'
           hep_sq := hep_sq
-          hep_l := X.skInclusion_isCofibration 1 |>.hasCurriedHEP Y
+          hep_l := X.skIncl_isCofibration 1 |>.hasCurriedHEP Y
             |>.hasLift |>.sq_hasLift hep_sq |>.exists_lift.some }
   | n + 1 => by
       let f' := (F n).l.l
       let F' := (F n).hep_l.l ≫ PathSpace.eval₁ Y
-      let sq' : CommSq f' (X.skInclusionToNextSk (n + 1)) j (X.skInclusion (n + 1 + 1) ≫ F') :=
+      let sq' : CommSq f' (X.skInclSucc (n + 1)) j (X.skIncl (n + 1 + 1) ≫ F') :=
         ⟨by
           rw [← (F n).l.curriedH_apply_one, ← Category.assoc, ← Category.assoc]
           congr 1
-          rw [RelCWComplex.skInclusionToNextSk_skInclusion_eq, (F n).hep_l.fac_left] ⟩
+          rw [X.skInclSucc_skIncl_eq, (F n).hep_l.fac_left] ⟩
       let l' := jcom_sk (n + 1) |>.sq_hasLift sq' |>.hasLift.some
-      have hep_sq : CommSq l'.curriedH (X.skInclusion (n + 1 + 1)) (PathSpace.eval₀ Y) F' :=
+      have hep_sq : CommSq l'.curriedH (X.skIncl (n + 1 + 1)) (PathSpace.eval₀ Y) F' :=
         ⟨l'.curriedH_apply_zero⟩
       exact
         { f := f'
@@ -242,7 +242,7 @@ private noncomputable def F : ∀ n : ℕ, FStruct X j n
           sq := sq'
           l := l'
           hep_sq := hep_sq
-          hep_l := X.skInclusion_isCofibration (n + 1 + 1) |>.hasCurriedHEP Y
+          hep_l := X.skIncl_isCofibration (n + 1 + 1) |>.hasCurriedHEP Y
             |>.hasLift |>.sq_hasLift hep_sq |>.exists_lift.some }
 
 /-- Invoke this definition with `m = 0` and `step = n` to get the homotopy `C(I × (X.sk n), Y)`
@@ -255,33 +255,33 @@ Note: invoking this definition with `step = 0` gives the last homotopy
 in the chain of `(n + 1)` homotopies. -/
 private noncomputable def H (n m step : ℕ) (hstep : m + step = n) :
     ContinuousMap.Homotopy
-      (X.skInclusion n ≫ (F jcom_sk sq m).F).hom
-      (X.skInclusion n ≫ (F jcom_sk sq n).F).hom :=
+      (X.skIncl n ≫ (F jcom_sk sq m).F).hom
+      (X.skIncl n ≫ (F jcom_sk sq n).F).hom :=
   match step with
   | 0 =>
-      { toContinuousMap := ContinuousMap.Homotopy.refl (X.skInclusion n ≫ (F jcom_sk sq n).F).hom
+      { toContinuousMap := ContinuousMap.Homotopy.refl (X.skIncl n ≫ (F jcom_sk sq n).F).hom
         map_zero_left x := by subst hstep; rfl
         map_one_left x := by subst hstep; rfl }
-      -- hstep ▸ ContinuousMap.Homotopy.refl (X.skInclusion n ≫ (F jcom_sk sq n).F).hom
+      -- hstep ▸ ContinuousMap.Homotopy.refl (X.skIncl n ≫ (F jcom_sk sq n).F).hom
       -- ContinuousMap.Homotopy.refl ((F n).f ≫ j).hom
   | step + 1 => by
       let Hlow : ContinuousMap.Homotopy
-          (X.skInclusion n ≫ (F jcom_sk sq m).F).hom
-          (X.skInclusion n ≫ (F jcom_sk sq (m + 1)).F).hom :=
-        { toContinuousMap := (X.skInclusion n ≫ (F jcom_sk sq m).hep_l.l).hom.uncurry.argSwap
+          (X.skIncl n ≫ (F jcom_sk sq m).F).hom
+          (X.skIncl n ≫ (F jcom_sk sq (m + 1)).F).hom :=
+        { toContinuousMap := (X.skIncl n ≫ (F jcom_sk sq m).hep_l.l).hom.uncurry.argSwap
           map_zero_left x := by
-            change (X.skInclusion n ≫ (F ..).hep_l.l ≫ PathSpace.eval₀ _).hom x = _
+            change (X.skIncl n ≫ (F ..).hep_l.l ≫ PathSpace.eval₀ _).hom x = _
             rw [(F ..).hep_l.fac_right]
           map_one_left x := rfl }
       let Hhigh : ContinuousMap.Homotopy
-          (X.skInclusion n ≫ (F jcom_sk sq (m + 1)).F).hom
-          (X.skInclusion n ≫ (F jcom_sk sq n).F).hom :=
+          (X.skIncl n ≫ (F jcom_sk sq (m + 1)).F).hom
+          (X.skIncl n ≫ (F jcom_sk sq n).F).hom :=
         H n (m + 1) step (by rw [← hstep, add_comm step 1, add_assoc])
       exact Hlow.trans Hhigh  -- `Hlow` on `[0, 1/2]`
 
-private lemma H_skInclusionToNextSk (n m step : ℕ) (hstep : m + step = n) :
+private lemma H_skInclSucc (n m step : ℕ) (hstep : m + step = n) :
     ∀ x t,
-      (H jcom_sk sq (n + 1) m (step + 1) (by omega)).toFun (t, (X.skInclusionToNextSk n).hom x) =
+      (H jcom_sk sq (n + 1) m (step + 1) (by omega)).toFun (t, (X.skInclSucc n).hom x) =
       (H jcom_sk sq n m step hstep).toFun (t, x) :=
   let F := TopCat.IsCompressible.relCWComplex.F jcom_sk sq
   match step with
@@ -295,15 +295,15 @@ private lemma H_skInclusionToNextSk (n m step : ℕ) (hstep : m + step = n) :
       simp only [ContinuousMap.Homotopy.trans_apply, one_div]
       by_cases ht : t.val ≤ 2⁻¹
       all_goals simp only [ht, ↓reduceDIte, hom_comp, ContinuousMap.comp_apply]
-      · change (X.skInclusionToNextSk m ≫ (X.skInclusion (m + 1) ≫ (F m).hep_l.l) ≫
-            PathSpace.evalAt _ _).hom x = (X.skInclusion m ≫ (F m).F).hom x
+      · change (X.skInclSucc m ≫ ((X.skIncl (m + 1)) ≫ (F m).hep_l.l) ≫
+            PathSpace.evalAt _ _).hom x = (X.skIncl m ≫ (F m).F).hom x
         congr 2
         rw [(F m).hep_l.fac_left, (F m).l.curriedH_prop]
-        rw [← X.skInclusionToNextSk_skInclusion_eq m, Category.assoc]
-      · change (X.skInclusionToNextSk m ≫ X.skInclusion (m + 1) ≫ (F (m + 1)).F).hom _ =
-          (X.skInclusion m ≫ (F m).F).hom _
+        rw [← X.skInclSucc_skIncl_eq m, Category.assoc]
+      · change (X.skInclSucc m ≫ (X.skIncl (m + 1)) ≫ (F (m + 1)).F).hom _ =
+          (X.skIncl m ≫ (F m).F).hom _
         congr 2
-        rw [← X.skInclusionToNextSk_skInclusion_eq m, Category.assoc, ← (F m).l.curriedH_prop 1]
+        rw [← X.skInclSucc_skIncl_eq m, Category.assoc, ← (F m).l.curriedH_prop 1]
         congr 1
         rw [(by rfl : (F (m + 1)).F = (F m).hep_l.l ≫ PathSpace.evalAt _ 1)]
         rw [← Category.assoc, (F m).hep_l.fac_left]
@@ -315,11 +315,11 @@ private lemma H_skInclusionToNextSk (n m step : ℕ) (hstep : m + step = n) :
       simp only [ContinuousMap.Homotopy.trans_apply, one_div]
       by_cases ht : t.val ≤ 2⁻¹
       all_goals simp only [ht, ↓reduceDIte]
-      · change ((X.skInclusionToNextSk n ≫ X.skInclusion (n + 1) ≫ (F m).hep_l.l).hom x) _ =
-          ((X.skInclusion n ≫ (F m).hep_l.l).hom x) _
+      · change ((X.skInclSucc n ≫ (X.skIncl (n + 1)) ≫ (F m).hep_l.l).hom x) _ =
+          ((X.skIncl n ≫ (F m).hep_l.l).hom x) _
         congr 3
-        rw [← Category.assoc, X.skInclusionToNextSk_skInclusion_eq]
-      · apply H_skInclusionToNextSk n (m + 1) step (by omega)
+        rw [← Category.assoc, X.skInclSucc_skIncl_eq]
+      · apply H_skInclSucc n (m + 1) step (by omega)
 
 end IsCompressible.relCWComplex
 
@@ -339,19 +339,19 @@ X.sk 0 --- f₀ ---→ B
   X ----- F₀ ----→ Y
 ```
 -/
-theorem IsCompressible.relCWComplex_of_diskBoundaryInclusion
+theorem IsCompressible.relCWComplex_of_diskBoundaryIncl
     (X : RelCWComplex.{u}) {B Y : TopCat.{u}} (j : B ⟶ Y)
-    (jcom : ∀ n, IsCompressible (diskBoundaryInclusion n) j) :
-    IsCompressible (X.skInclusion 0) j where
+    (jcom : ∀ n, IsCompressible (diskBoundaryIncl n) j) :
+    IsCompressible (X.skIncl 0) j where
   sq_hasLift := fun {F₀ f₀} sq ↦ by
-    have jcom_sk n : IsCompressible (X.skInclusionToNextSk n) j := by
+    have jcom_sk n : IsCompressible (X.skInclSucc n) j := by
       apply IsCompressible.of_comp_iso_left
       apply IsCompressible.pushout (X.attachCells n).pushout_isPushout
       apply IsCompressible.coprod
       exact jcom n
     let F := IsCompressible.relCWComplex.F jcom_sk sq
     let H n := IsCompressible.relCWComplex.H jcom_sk sq n 0 n (by omega)
-    let ccL : Limits.Cocone (Functor.ofSequence X.skInclusionToNextSk) :=
+    let ccL : Limits.Cocone (Functor.ofSequence X.skInclSucc) :=
       { pt := B
         ι := NatTrans.ofSequence (fun n ↦ (F n).f)
           (fun n ↦ by
@@ -359,8 +359,8 @@ theorem IsCompressible.relCWComplex_of_diskBoundaryInclusion
               Functor.ofSequence_map_homOfLE_succ, Functor.const_obj_map, Category.comp_id]
             exact (F n).l.fac_left ) }
     let L : X.toTopCat ⟶ B :=
-      Limits.colimit.desc (Functor.ofSequence X.skInclusionToNextSk) ccL
-    let ccH : Limits.Cocone (Functor.ofSequence X.skInclusionToNextSk) :=
+      Limits.colimit.desc (Functor.ofSequence X.skInclSucc) ccL
+    let ccH : Limits.Cocone (Functor.ofSequence X.skInclSucc) :=
       { pt := TopCat.of C(I, Y)
         ι := NatTrans.ofSequence (fun n ↦ ofHom (H n).toContinuousMap.argSwap.curry)
           (fun n ↦ by
@@ -370,9 +370,9 @@ theorem IsCompressible.relCWComplex_of_diskBoundaryInclusion
             ext x t
             simp only [hom_comp, hom_ofHom, ContinuousMap.comp_apply, ContinuousMap.curry_apply,
               ContinuousMap.prodSwap_apply, ContinuousMap.Homotopy.coe_toContinuousMap]
-            apply IsCompressible.relCWComplex.H_skInclusionToNextSk ) }
+            apply IsCompressible.relCWComplex.H_skInclSucc ) }
     let H' : X.toTopCat ⟶ TopCat.of C(I, Y) :=
-      Limits.colimit.desc (Functor.ofSequence X.skInclusionToNextSk) ccH
+      Limits.colimit.desc (Functor.ofSequence X.skInclSucc) ccH
     refine ⟨Nonempty.intro <| LiftStructUpToRelHomotopy.curriedMk L ?_ H' ?_ ?_ fun t ↦ ?_⟩
     · apply Limits.colimit.ι_desc
     any_goals
@@ -384,7 +384,7 @@ theorem IsCompressible.relCWComplex_of_diskBoundaryInclusion
         Functor.const_obj_obj, homOfLE_leOfHom, Functor.const_obj_map, id_eq, hom_ofHom,
         ContinuousMap.comp_apply, ContinuousMap.curry_apply, ContinuousMap.prodSwap_apply,
         ContinuousMap.Homotopy.coe_toContinuousMap, eq_mpr_eq_cast, NatTrans.ofSequence_app]
-    · change _ = X.skInclusion n ≫ _
+    · change _ = X.skIncl n ≫ _
       ext x
       simp only [hom_comp, hom_ofHom, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
         ContinuousMap.curry_apply, ContinuousMap.prodSwap_apply,
@@ -398,10 +398,10 @@ theorem IsCompressible.relCWComplex_of_diskBoundaryInclusion
       simp only [hom_comp, hom_ofHom, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
         ContinuousMap.curry_apply, ContinuousMap.prodSwap_apply,
         ContinuousMap.Homotopy.coe_toContinuousMap, ContinuousMap.Homotopy.apply_one]
-      change (X.skInclusion n ≫ (F n).F).hom _ = ((F n).f ≫ j).hom _
+      change (X.skIncl n ≫ (F n).F).hom _ = ((F n).f ≫ j).hom _
       congr 2
-      rw [(F n).sq.w, ← Category.assoc, X.skInclusionToNextSk_skInclusion_eq]
-    · nth_rw 1 [RelCWComplex.skInclusion]
+      rw [(F n).sq.w, ← Category.assoc, X.skInclSucc_skIncl_eq]
+    · nth_rw 1 [RelCWComplex.skIncl]
       rw [← Category.assoc, Limits.colimit.ι_desc]
       unfold ccH
       simp only [ContinuousMap.argSwap, hom_comp, ContinuousMap.coe_mk, Functor.ofSequence_obj,

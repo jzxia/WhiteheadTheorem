@@ -165,6 +165,6 @@ structure IsCompressible (ι : A' ⟶ X') (i : A ⟶ X) : Prop where
 -- #check CommSq.HasLift
 -- #check CommSq.LiftStruct
 -- #check HasLiftingProperty
--- #check cubeBoundaryInclusion
+-- #check cubeBoundaryIncl
 
 end TopCat

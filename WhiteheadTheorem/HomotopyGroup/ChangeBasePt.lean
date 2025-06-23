@@ -13,7 +13,7 @@ open scoped unitInterval Topology Topology.Homotopy TopCat CategoryTheory
 universe u
 
 variable {n : ℕ}
-variable {X Y Z : Type u} [TopologicalSpace X] [TopologicalSpace Y] [TopologicalSpace Z]
+variable {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y]
 variable {x₀ x₁ x₂ : X}
 
 namespace GenLoop
@@ -61,12 +61,12 @@ noncomputable def trans (K : LevelHomotopy f₀ f₁ p) (L : LevelHomotopy f₁ 
     all_goals simp only [ht, ↓reduceIte,
       ContinuousMap.Homotopy.extend, ContinuousMap.coe_IccExtend, Path.extend]
     · have t_mem : 2 * t.val ∈ I := ⟨by linarith only [t.property.left], by linarith only [ht]⟩
-      iterate 2 (rw [Set.IccExtend_of_mem _ _ t_mem])
-      rw [ContinuousMap.Homotopy.curry_apply]
+      simp only [Set.IccExtend_of_mem _ _ t_mem, ContinuousMap.Homotopy.curry_apply,
+        ContinuousMap.coe_mk]
       exact K.prop' ⟨2 * t, t_mem⟩ y hy
     · have t_mem : 2 * t.val - 1 ∈ I := ⟨by linarith only [ht], by linarith only [t.property.right]⟩
-      iterate 2 (rw [Set.IccExtend_of_mem _ _ t_mem])
-      rw [ContinuousMap.Homotopy.curry_apply]
+      simp only [Set.IccExtend_of_mem _ _ t_mem, ContinuousMap.Homotopy.curry_apply,
+        ContinuousMap.coe_mk]
       exact L.prop' ⟨2 * t - 1, t_mem⟩ y hy
 
 /-- A level homotopy whose intermediate maps are constant `GenLoop`s -/
@@ -104,21 +104,21 @@ theorem homotopic_of_levelHomotopy_along_null_loop {f g : Ω^ (Fin n) X x₀}
     H.toContinuousMap.comp <|
     ((ContinuousMap.id _).prodMap ⟨ULift.down, continuous_uliftDown⟩).comp ContinuousMap.prodSwap
   let Fs : C(((∂𝕀 n) × I) × I, X) := ⟨fun ⟨⟨⟨y⟩, t⟩, s⟩ ↦ pnull.some ⟨s, t⟩, by fun_prop⟩ -- sides
-  have : Fb ∘ ((TopCat.cubeBoundaryInclusion n).hom.prodMap (ContinuousMap.id I)) =
+  have : Fb ∘ ((TopCat.cubeBoundaryIncl n).hom.prodMap (ContinuousMap.id I)) =
       Fs ∘ fun x ↦ (x, 0) := by
     funext ⟨y, t⟩
     simp only [ContinuousMap.coe_comp, ContinuousMap.Homotopy.coe_toContinuousMap,
       Function.comp_apply, ContinuousMap.prodMap_apply, ContinuousMap.coe_id, Prod.map_apply, id_eq,
       ContinuousMap.coe_mk, Path.coe_toContinuousMap, Fb, Fs]
-    change H.toFun (t, ((TopCat.cubeBoundaryInclusion n).hom y).down) = (Nonempty.some pnull) (0, t)
-    rw [H.prop' t ((TopCat.cubeBoundaryInclusion n).hom y).down y.down.property]
+    change H.toFun (t, ((TopCat.cubeBoundaryIncl n).hom y).down) = (Nonempty.some pnull) (0, t)
+    rw [H.prop' t ((TopCat.cubeBoundaryIncl n).hom y).down y.down.property]
     rw [pnull.some.apply_zero _]
     rfl
-  obtain ⟨F, ⟨hFb, hFs⟩⟩ := TopCat.cubeBoundaryInclusion_prod_unitInterval_hasHEP n X Fb Fs this
+  obtain ⟨F, ⟨hFb, hFs⟩⟩ := TopCat.cubeBoundaryIncl_prod_unitInterval_hasHEP n X Fb Fs this
   have Fyts_eq_x₀ (y : ∂I^n) (t s : I) (hts : (t = 0 ∨ t = 1) ∨ s = 1) :
       F ((⟨y.val⟩, t), s) = x₀ := by
     have := congrFun hFs ((⟨y⟩, t), s)
-    dsimp [TopCat.cubeBoundaryInclusion] at this
+    dsimp [TopCat.cubeBoundaryIncl] at this
     change _ = F ((⟨y.val⟩, t), s) at this
     rw [← this]
     dsimp only [Path.coe_toContinuousMap, ContinuousMap.coe_mk, Fs, Fb]
@@ -184,9 +184,9 @@ theorem homotopic_of_levelHomotopy_along_homotopic_paths
     GenLoop.Homotopic g h := by
   apply homotopic_of_levelHomotopy_along_null_loop (K.symm.trans L)
   have pq_pp : (p.symm.trans q).Homotopic (p.symm.trans p) :=
-    Path.Homotopic.hcomp (Path.Homotopic.refl p.symm) pq.symm
+    (Path.Homotopic.refl p.symm).hcomp pq.symm
   have pp_0 : (p.symm.trans p).Homotopic (Path.refl _) :=
-    Nonempty.intro <| (Path.Homotopy.reflSymmTrans p).symm
+    Nonempty.intro (Path.Homotopy.reflSymmTrans p).symm
   exact pq_pp.trans pp_0
 
 
@@ -198,8 +198,8 @@ noncomputable def ChangeBasePt.get
     (f₀ : Ω^ (Fin n) X x₀) (p : Path x₀ x₁) : ChangeBasePt f₀ p := by
   let f₀' : C(𝕀 n, X) := (f₀.val).comp ⟨ULift.down, continuous_uliftDown⟩
   let h : C((∂𝕀 n) × I, X) := ⟨fun ⟨_, t⟩ ↦ p t, by fun_prop⟩
-  have hep := TopCat.cubeBoundaryInclusion_hasHEP n X f₀' h
-  have : f₀' ∘ (TopCat.cubeBoundaryInclusion n).hom = h ∘ fun x ↦ (x, 0) := by
+  have hep := TopCat.cubeBoundaryIncl_hasHEP n X f₀' h
+  have : f₀' ∘ (TopCat.cubeBoundaryIncl n).hom = h ∘ fun x ↦ (x, 0) := by
     funext ⟨y, hy⟩
     simp only [Function.comp_apply, ContinuousMap.coe_mk, Path.source, h]
     exact f₀.property y hy
@@ -209,7 +209,7 @@ noncomputable def ChangeBasePt.get
   case res => exact
     ⟨ ⟨fun y ↦ H' ⟨⟨y⟩, 1⟩, by fun_prop⟩,  -- include to the top face, then apply `H'`
       fun y hy ↦ by  -- f₁ is a `GenLoop`
-        change H' ⟨(TopCat.cubeBoundaryInclusion n) ⟨y, hy⟩, 1⟩ = _
+        change H' ⟨(TopCat.cubeBoundaryIncl n) ⟨y, hy⟩, 1⟩ = _
         have := congr_fun H'_spec.right ⟨⟨y, hy⟩, 1⟩
         dsimp only [Function.comp_apply, Prod.map_apply, id_eq, h] at this
         rw [← this, ContinuousMap.coe_mk, Path.target] ⟩
@@ -222,7 +222,7 @@ noncomputable def ChangeBasePt.get
       map_one_left y := by simp
       prop' t y hy := by
         dsimp
-        change H' ⟨(TopCat.cubeBoundaryInclusion n).hom ⟨y, hy⟩, t⟩ = _
+        change H' ⟨(TopCat.cubeBoundaryIncl n).hom ⟨y, hy⟩, t⟩ = _
         have := congr_fun H'_spec.right ⟨⟨y, hy⟩, t⟩
         dsimp only [Function.comp_apply, Prod.map_apply, id_eq] at this
         rw [← this]
@@ -319,7 +319,6 @@ noncomputable def FundamentalGroupoid.changeBasePt (n : ℕ) : FundamentalGroupo
     { toFun := HomotopyGroup.changeBasePt n (Quotient.out p)
       map_point := Quotient.sound GenLoop.ChangeBasePt.apply_const }
   map_id x₀ := by
-    dsimp only
     congr 1
     ext f
     rw [id_eq]
@@ -333,7 +332,6 @@ noncomputable def FundamentalGroupoid.changeBasePt (n : ℕ) : FundamentalGroupo
     change (Path.Homotopic.setoid _ _) _ _
     apply Quotient.mk_out
   map_comp {x₀ x₁ x₂} p q := by
-    dsimp only
     congr 1
     ext f
     dsimp only [Function.comp_apply]

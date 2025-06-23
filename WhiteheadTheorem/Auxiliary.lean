@@ -3,13 +3,55 @@ import Mathlib.Data.Fintype.Lattice
 import Mathlib.Order.ConditionallyCompleteLattice.Finset
 import Mathlib.Topology.Homotopy.Basic
 import Mathlib.CategoryTheory.Limits.Shapes.Pullback.Square
--- import Mathlib.Topology.Category.TopCat.Limits.Basic
+import Mathlib.Topology.Category.TopCat.Limits.Basic
+import Mathlib.CategoryTheory.Limits.Shapes.Products
 
 
-lemma ContinuousMap.Homotopic.of_eq
-    (X Y : Type u) [TopologicalSpace X] [TopologicalSpace Y] (f g : C(X, Y)) (hfg : f = g) :
-    f.Homotopic g :=
+namespace CategoryTheory
+
+-- #check CategoryTheory.eq_of_comp_right_eq
+lemma eq_of_comp_right_iso_eq {C : Type*} [Category C] {X Y Z : C}
+    (h : X ⟶ Y) [IsIso h] {f g : Y ⟶ Z} (e : h ≫ f = h ≫ g) : f = g := by
+  have := congrArg (inv h ≫ ·) e
+  simp only [IsIso.inv_hom_id_assoc] at this
+  exact this
+lemma eq_of_comp_left_iso_eq {C : Type*} [Category C] {X Y Z : C}
+    (h : Y ⟶ Z) [IsIso h] {f g : X ⟶ Y} (e : f ≫ h = g ≫ h) : f = g := by
+  have := congrArg (· ≫ inv h) e
+  simp only [Category.assoc, IsIso.hom_inv_id, Category.comp_id] at this
+  exact this
+
+end CategoryTheory
+
+
+namespace TopCat
+
+open CategoryTheory
+
+instance isIso_of_isEmpty {X Y : TopCat.{u}} [IsEmpty X] [IsEmpty Y] (f : X ⟶ Y) : IsIso f := by
+  use ofHom ⟨isEmptyElim, by fun_prop⟩
+  constructor
+  all_goals ext x; exact isEmptyElim x
+
+instance isEmpty_sigmaObj_of_isEmpty_dom
+    {β : Type w} (f : β → TopCat.{u}) [Limits.HasCoproduct f] [IsEmpty β] : IsEmpty ↑(∐ f) :=
+  have i : ∐ f ⟶ TopCat.of PEmpty.{u + 1} := Limits.Sigma.desc isEmptyElim
+  ⟨fun z ↦ isEmptyElim (i z)⟩
+
+end TopCat
+
+
+namespace ContinuousMap
+
+lemma eq_of_topCat_ofHom {A B : Type u} [TopologicalSpace A] [TopologicalSpace B]
+    {f g : C(A, B)} (e : TopCat.ofHom f = TopCat.ofHom g) : f = g :=
+  TopCat.hom_ext_iff.mp e
+
+lemma Homotopic.of_eq (X Y : Type u) [TopologicalSpace X] [TopologicalSpace Y]
+    (f g : C(X, Y)) (hfg : f = g) : f.Homotopic g :=
   hfg ▸ ContinuousMap.Homotopic.refl f
+
+end ContinuousMap
 
 
 section Real.iSup
@@ -49,7 +91,7 @@ lemma Real.le_iSup_of_exists_ge_of_finite_domain {ι : Type*} {f : ι → ℝ} {
 
 lemma Real.exists_eq_of_iSup_eq_of_finite_domain {ι : Type*} {f : ι → ℝ} {a : ℝ}
     [Finite ι] (hfz : ∃ i, f i ≥ 0) (hf : ⨆ i, f i = a) : ∃ i, f i = a := by
-  have : Nonempty ι := nonempty_of_exists hfz
+  have : Nonempty ι := hfz.nonempty
   have iSup_lt_iff : ⨆ i ∈ (Set.univ : Set ι), f i < a ↔ ∀ i ∈ Set.univ, f i < a := by
     apply Set.Finite.ciSup_lt_iff Set.finite_univ
     rw [Real.sSup_empty]   -- The supremum `sSup ∅` is defined to be 0 for `ℝ`
@@ -71,9 +113,9 @@ lemma Real.exists_eq_of_iSup_eq_of_finite_domain {ι : Type*} {f : ι → ℝ} {
 end Real.iSup
 
 
-/-- The result of embedding `i : Fin n` in `Fin (n+1)` is not equal to `n : Fin (n+1)` -/
-lemma Fin.castSucc_ne_last {n : ℕ} (i : Fin n) : i.castSucc ≠ Fin.last n :=
-  fun heq ↦ Nat.ne_of_lt i.isLt (congrArg Fin.val heq)
+-- /-- The result of embedding `i : Fin n` in `Fin (n+1)` is not equal to `n : Fin (n+1)` -/
+-- lemma Fin.castSucc_ne_last {n : ℕ} (i : Fin n) : i.castSucc ≠ Fin.last n :=
+--   fun heq ↦ Nat.ne_of_lt i.isLt (congrArg Fin.val heq)
 
 
 section GluingLemma

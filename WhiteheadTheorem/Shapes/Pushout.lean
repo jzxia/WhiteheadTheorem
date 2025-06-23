@@ -44,10 +44,52 @@ lemma pushout_isOpen (s : Set (pushout f g).carrier)
   | WalkingSpan.left => hl
   | WalkingSpan.right => hr
 
+/-- Construct a morphism into a discrete space `Y` using a function into `Y`. -/
+abbrev homToDiscreteSpaceOfFun {X : TopCat.{u}} {Y : Type u} (f : ↑X → Y) : X ⟶ @TopCat.of Y ⊤ :=
+  @TopCat.ofHom _ _ _ ⊤ <| @ContinuousMap.mk _ _ _ ⊤ f continuous_top
+
+open Classical in  -- Decidable (b = a)
+/--
+In the pushout square below,
+the image of `inl` and the image of `inr` cover the space `(pushout f g).carrier`.
+```
+X ----f----> Y
+|            |
+g           inl
+|            |
+v            v
+Z ---inr---> pushout f g
+```
+-/
+lemma eq_inl_or_eq_inr_of_mem_pushout (a : (pushout f g).carrier) :
+    (∃ y, a = pushout.inl f g y) ∨ (∃ z, a = pushout.inr f g z) := by
+  -- Let A' be the union of the pushout with an extra point, with the discrete topology
+  let A' := @TopCat.of (Option (pushout f g).carrier) ⊤
+  let inl' : Y ⟶ A' := homToDiscreteSpaceOfFun fun y ↦ some (pushout.inl f g y)
+  let inr' : Z ⟶ A' := homToDiscreteSpaceOfFun fun z ↦ some (pushout.inr f g z)
+  have w' : f ≫ inl' = g ≫ inr' := by
+    ext x : 1
+    change some ((f ≫ pushout.inl f g) x) = some ((g ≫ pushout.inr f g) x)
+    rw [pushout.condition]
+  -- let d : pushout f g ⟶ A' := pushout.desc inl' inr' w'
+  let d1 : pushout f g ⟶ A' := homToDiscreteSpaceOfFun fun b ↦ some b
+  let d2 : pushout f g ⟶ A' := homToDiscreteSpaceOfFun fun b ↦ if b = a then none else some b
+  by_contra! h
+  have : d1 = d2 := by
+    apply pushout.hom_ext
+    all_goals
+      ext y : 1
+      simp only [d1, d2, hom_comp, hom_ofHom, ContinuousMap.comp_apply]
+      change some _ = if _ = a then _ else _
+    · simp only [(h.left y).symm, ↓reduceIte]
+    · simp only [(h.right y).symm, ↓reduceIte]
+  have d_eq : d1 a = d2 a := by rw [this]
+  have d_ne : d1 a ≠ d2 a := by
+    change some _ ≠ if _ then _ else _
+    simp only [↓reduceIte, ne_eq, reduceCtorEq, not_false_eq_true]
+  exact d_ne d_eq
+
 end TopCat
-
-
-
 
 
 variable [∀ z, Decidable (z ∈ Set.range g)]
@@ -232,7 +274,7 @@ lemma isOpenMap_pushoutInr' (hg : IsClosed {z | z ∈ Set.range g}) :
       · exact injective_pushoutInr' f g
       · intro z hz z' hz'
         exact pushout_inr_neq_pushout_inr_of_mem_compl_range_of_mem_range f g
-          z hz z' (Set.not_mem_compl_iff.mp hz')
+          z hz z' (Set.notMem_compl_iff.mp hz')
     rw [this]
     apply IsOpen.isOpenMap_subtype_val (isOpen_compl_iff.mpr hg)
     assumption

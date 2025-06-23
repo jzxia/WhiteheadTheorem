@@ -4,7 +4,8 @@ import WhiteheadTheorem.Compressible.Defs
 import WhiteheadTheorem.Compressible.Disk
 import WhiteheadTheorem.Compressible.WeakEquiv
 import WhiteheadTheorem.CWComplex.Basic
-import WhiteheadTheorem.CWComplex.IProd
+import WhiteheadTheorem.CWComplex.IProd.Def
+import WhiteheadTheorem.CWComplex.IProd.Iso
 import WhiteheadTheorem.Defs
 import WhiteheadTheorem.Exponential
 import WhiteheadTheorem.HEP.Cofibration
@@ -18,12 +19,14 @@ import WhiteheadTheorem.RelHomotopyGroup.Compression
 import WhiteheadTheorem.RelHomotopyGroup.Defs
 import WhiteheadTheorem.RelHomotopyGroup.LongExactSeq
 import WhiteheadTheorem.Shapes.Cube
+import WhiteheadTheorem.Shapes.CubeBoundaryMap
 import WhiteheadTheorem.Shapes.Disk
 import WhiteheadTheorem.Shapes.DiskHomeoCube
 import WhiteheadTheorem.Shapes.Jar
 import WhiteheadTheorem.Shapes.MappingCylinder
 import WhiteheadTheorem.Shapes.Maps
 import WhiteheadTheorem.Shapes.Pushout
+import WhiteheadTheorem.Shapes.UnitInterval
 
 
 open CategoryTheory

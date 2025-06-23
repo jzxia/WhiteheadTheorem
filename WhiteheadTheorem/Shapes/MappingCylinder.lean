@@ -2,6 +2,7 @@ import WhiteheadTheorem.Defs
 import WhiteheadTheorem.Exponential
 import WhiteheadTheorem.Shapes.Maps
 import WhiteheadTheorem.Shapes.Pushout
+import WhiteheadTheorem.Shapes.UnitInterval
 import Mathlib.Topology.Homotopy.Equiv
 import Mathlib.Topology.Category.TopCat.Limits.Basic
 import Mathlib.CategoryTheory.Limits.Shapes.Pullback.Square
@@ -55,12 +56,11 @@ theorem isEmbedding_domIncl : Topology.IsEmbedding (domIncl f) := by
     apply Cyl.isClosed_range_i₀
   have em_i₁ : Topology.IsClosedEmbedding (Cyl.i₁_to_compl_range_i₀ X) := by
     apply Cyl.isClosedEmbedding_i₁_to_compl_range_i₀
-  convert Topology.IsEmbedding.comp em_inr.toIsEmbedding em_i₁.toIsEmbedding
+  convert em_inr.toIsEmbedding.comp em_i₁.toIsEmbedding
 
 /-- The domain `X` of a continuous map `f` is homeomorphic to the top surface of
 the mapping cylinder of `f`. -/
-def domHomeoTop : X ≃ₜ top f :=
-  Homeomorph.ofIsEmbedding (domIncl f) (isEmbedding_domIncl f)
+def domHomeoTop : X ≃ₜ top f := (isEmbedding_domIncl f).toHomeomorph
 
 def domInclToTop : C(X, top f) := toContinuousMap (domHomeoTop f)
 def domInclFromTop : C(top f, MapCyl f) := ⟨Subtype.val, continuous_subtype_val⟩

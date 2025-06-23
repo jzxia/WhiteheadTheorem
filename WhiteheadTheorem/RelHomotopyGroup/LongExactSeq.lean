@@ -405,4 +405,19 @@ theorem isExactAt_bd_iStar :
 -- #check (jStar (n+1) X A a : π_ (n+1) X a → π﹍ (n+1) X A a)
 -- #check (bd n X A a : π﹍ (n+1) X A a → π_ n A a)
 
+theorem unique_relHomotopyGroup_of_bijective_iStar
+    {X : TopCat.{u}} {A : Set X} (a : A)
+    (hbi : ∀ n, Function.Bijective <| iStar n X A a) :
+    ∀ n, Nonempty <| Unique <| π﹍ (n + 1) X A a :=
+  fun n ↦ ExactSeq.unique_mid_of_five
+    (iStar (n + 1) _ _ _)
+    (jStar (n + 1) _ _ _)
+    (bd     n      _ _ _)
+    (iStar  n      _ _ _)
+    (hbi (n + 1)).surjective
+    (hbi  n     ).injective
+    (isExactAt_iStar_jStar n _ _ _)
+    (isExactAt_jStar_bd    n _ _ _)
+    (isExactAt_bd_iStar    n _ _ _)
+
 end RelHomotopyGroup

@@ -9,7 +9,7 @@ import Mathlib.Topology.Homotopy.Contractible
 This file proves that if `f : C(X, Y)` is a weak homotopy equivalence,
 then the inclusion map `MapCyl.domInclFromTop` from `X` to the mapping cylinder of `f`
 is `n`-compressible for every natural number `n`, i.e.,
-it is compressible with respect to `TopCat.diskBoundaryInclusion n : ∂𝔻 n ⟶ 𝔻 n`
+it is compressible with respect to `TopCat.diskBoundaryIncl n : ∂𝔻 n ⟶ 𝔻 n`
 for each `n`.
 -/
 
@@ -92,16 +92,10 @@ lemma bijective_iStar_mapCyl_of_isIso
 theorem unique_pi_mapCyl_of_isWeakHomotopyEquiv (hf : IsWeakHomotopyEquiv f.hom) :
     Nonempty <| Unique <| π﹍ (n + 1) (MapCyl f) (MapCyl.top f) (MapCyl.domInclToTop f x₀) := by
   replace hf := isIso_inducedPointedHom_of_isWeakHomotopyEquiv hf
-  exact ExactSeq.unique_mid_of_five
-    (iStar (n + 1) _ _ _)
-    (jStar (n + 1) _ _ _)
-    (bd     n      _ _ _)
-    (iStar  n      _ _ _)
-    (bijective_iStar_mapCyl_of_isIso _ _ _ (hf (n + 1) _)).surjective
-    (bijective_iStar_mapCyl_of_isIso _ _ _ (hf  n      _)).injective
-    (isExactAt_iStar_jStar n _ _ _)
-    (isExactAt_jStar_bd    n _ _ _)
-    (isExactAt_bd_iStar    n _ _ _)
+  apply unique_relHomotopyGroup_of_bijective_iStar
+  intro n
+  apply bijective_iStar_mapCyl_of_isIso
+  exact hf n x₀
 
 end RelHomotopyGroup
 
@@ -123,7 +117,7 @@ lemma exists_relGenLoop_homotopicWith_isMapOfPairs
     (f : C(I^ Fin (n + 1), X)) (hf : IsMapOfPairs X A f) :
     ∃ a : A, ∃ g : RelGenLoop (n + 1) X A a, f.HomotopicWith g fun h ↦ IsMapOfPairs X A h := by
   let fb : C(∂I^(n + 1), A) := ⟨fun y ↦ ⟨f y, hf y y.property⟩, by fun_prop⟩
-  let fj : C(⊔I^(n + 1), A) := fb.comp <| boundaryJarInclusionToBoundary (n + 1)
+  let fj : C(⊔I^(n + 1), A) := fb.comp <| boundaryJarInclToBoundary (n + 1)
   obtain ⟨y₀, Hfj⟩ := contractible_iff_id_nullhomotopic (⊔I^(n + 1)) |>.mp
     instContractibleSpaceBoundaryJar
   replace Hfj := Hfj.some.hcomp (ContinuousMap.Homotopy.refl fj)
@@ -136,8 +130,8 @@ lemma exists_relGenLoop_homotopicWith_isMapOfPairs
   let fb' : C(∂𝕀 (n + 1), A) := fb.comp ⟨ULift.down.{u}, continuous_uliftDown⟩
   let Hfj' : C((⊔𝕀 (n + 1)) × I, A) := Hfj.toContinuousMap.argSwap.comp <|
     ContinuousMap.prodMap ⟨ULift.down.{u}, continuous_uliftDown⟩ (ContinuousMap.id _)
-  have : ⇑fb' ∘ (cubeBoundaryJarInclusionToBoundary (n + 1)).hom = ⇑Hfj' ∘ fun x ↦ (x, 0) := by
-    unfold cubeBoundaryJarInclusionToBoundary boundaryJarInclusionToBoundary
+  have : ⇑fb' ∘ (cubeBoundaryJarInclToBoundary (n + 1)).hom = ⇑Hfj' ∘ fun x ↦ (x, 0) := by
+    unfold cubeBoundaryJarInclToBoundary boundaryJarInclToBoundary
     ext y
     simp only [ContinuousMap.coe_mk, hom_ofHom, Function.comp_apply]
     unfold fb' fb Hfj' ContinuousMap.argSwap
@@ -146,13 +140,13 @@ lemma exists_relGenLoop_homotopicWith_isMapOfPairs
       ContinuousMap.prodSwap_apply, ContinuousMap.Homotopy.coe_toContinuousMap,
       ContinuousMap.Homotopy.apply_zero]
     rfl
-  obtain ⟨H1, H1prop⟩ := cubeBoundaryJarInclusionToBoundary_hasHEP n A fb' Hfj' this
+  obtain ⟨H1, H1prop⟩ := cubeBoundaryJarInclToBoundary_hasHEP n A fb' Hfj' this
   -- `fb : C(∂I^(n + 1), X)` is homotopic through `H1` to a map that sends `⊔I^(n + 1)` to `a₀`.
   let f' : C(𝕀 (n + 1), X) := f.comp ⟨ULift.down.{u}, continuous_uliftDown⟩
   let H1' : C((∂𝕀 (n + 1)) × I, X) := ContinuousMap.comp ⟨Subtype.val, continuous_subtype_val⟩ H1
-  have := cubeBoundaryInclusion_hasHEP (n + 1) X f'
-  replace : ⇑f' ∘ (cubeBoundaryInclusion (n + 1)).hom = ⇑H1' ∘ fun x ↦ (x, 0) := by
-    unfold cubeBoundaryInclusion f' H1'
+  have := cubeBoundaryIncl_hasHEP (n + 1) X f'
+  replace : ⇑f' ∘ (cubeBoundaryIncl (n + 1)).hom = ⇑H1' ∘ fun x ↦ (x, 0) := by
+    unfold cubeBoundaryIncl f' H1'
     ext ⟨y, hy⟩
     simp only [ContinuousMap.coe_comp, ContinuousMap.coe_mk, hom_ofHom, Function.comp_apply]
     change f y = _
@@ -160,7 +154,7 @@ lemma exists_relGenLoop_homotopicWith_isMapOfPairs
     simp only [Function.comp_apply] at this
     rw [← this]
     rfl
-  obtain ⟨H2, H2prop⟩ := cubeBoundaryInclusion_hasHEP (n + 1) X f' H1' this
+  obtain ⟨H2, H2prop⟩ := cubeBoundaryIncl_hasHEP (n + 1) X f' H1' this
   -- `f : C(I^ Fin (n + 1), X)` is homotopic through `H2` to a map that
   -- sends `∂I^(n + 1)` to `A` and `⊔I^(n + 1)` to `a₀`.
   let g : C(I^ Fin (n + 1), X) := ⟨fun y ↦ H2 ⟨⟨y⟩, 1⟩, by fun_prop⟩
@@ -170,7 +164,7 @@ lemma exists_relGenLoop_homotopicWith_isMapOfPairs
     · intro y hy
       simp only [ContinuousMap.coe_mk]
       have := congr_fun H2prop.right ⟨⟨y, hy⟩, 1⟩
-      simp only [cubeBoundaryInclusion, hom_ofHom, Function.comp_apply, Prod.map_apply,
+      simp only [cubeBoundaryIncl, hom_ofHom, Function.comp_apply, Prod.map_apply,
         id_eq] at this
       change _ = H2 ({ down := y }, 1) at this
       rw [← this]
@@ -180,12 +174,12 @@ lemma exists_relGenLoop_homotopicWith_isMapOfPairs
       have hy' := boundaryJar_subset_boundary _ hy
       simp only [ContinuousMap.coe_mk]
       have := congr_fun H2prop.right ⟨⟨y, hy'⟩, 1⟩
-      simp only [cubeBoundaryInclusion, hom_ofHom, Function.comp_apply, Prod.map_apply,
+      simp only [cubeBoundaryIncl, hom_ofHom, Function.comp_apply, Prod.map_apply,
         id_eq] at this
       change _ = H2 ({ down := y }, 1) at this
       rw [← this]
       replace := congr_fun H1prop.right ⟨⟨y, hy⟩, 1⟩
-      simp only [cubeBoundaryJarInclusionToBoundary, boundaryJarInclusionToBoundary,
+      simp only [cubeBoundaryJarInclToBoundary, boundaryJarInclToBoundary,
         ContinuousMap.coe_mk, hom_ofHom, Function.comp_apply, Prod.map_apply, id_eq] at this
       change _ = H1 ({ down := ⟨y, hy'⟩ }, 1) at this
       unfold H1'
@@ -220,7 +214,7 @@ lemma exists_relGenLoop_homotopicWith_isMapOfPairs
           ContinuousMap.comp_apply, ContinuousMap.prodMap_apply, ContinuousMap.coe_id,
           Prod.map_apply, id_eq, ContinuousMap.prodSwap_apply]
         have := congr_fun H2prop.right ⟨⟨y, hy⟩, t⟩
-        simp only [ContinuousMap.comp_apply, ContinuousMap.coe_mk, cubeBoundaryInclusion, hom_ofHom,
+        simp only [ContinuousMap.comp_apply, ContinuousMap.coe_mk, cubeBoundaryIncl, hom_ofHom,
           Function.comp_apply, Prod.map_apply, id_eq, H1'] at this
         change _ = H2 ({ down := y }, t) at this
         rw [← this]
@@ -260,7 +254,7 @@ variable {n : ℕ} (X : Type u) [TopologicalSpace X] (A : Set X)
 
 /-- A continuous map from the `n`-dimensional disk to `X` is called a map of pairs to `(X, A)`
 if it sends the boundary `∂𝔻 n` into `A`. -/
-abbrev IsMapOfPairs (f : C(𝔻 n, X)) : Prop := ∀ y : ∂𝔻 n, f (diskBoundaryInclusion n y) ∈ A
+abbrev IsMapOfPairs (f : C(𝔻 n, X)) : Prop := ∀ y : ∂𝔻 n, f (diskBoundaryIncl n y) ∈ A
 
 /-- Suppose `n ≥ 1` and the relative homotopy group `π﹍ n X A a` is zero for all `a : A`.
 If `f` is a continuous map of pairs from `(∂𝔻 n, 𝔻 n)` to `(X, A)`,
@@ -278,9 +272,9 @@ theorem homotopicWith_const_isMapOfPairs_of_unique_pi
   have hf' : Cube.IsMapOfPairs X A f' := fun y hy ↦ by
     unfold f' i_d iup
     simp only [Arrow.mk_right, ContinuousMap.comp_apply, ContinuousMap.coe_mk]
-    change f ( (cubeBoundaryInclusion (n + 1) ≫ e.inv.right) ⟨⟨y, hy⟩⟩ ) ∈ A
-    change f ( (e.inv.left ≫ diskBoundaryInclusion (n + 1)) ⟨⟨y, hy⟩⟩ ) ∈ A
-    change f ( diskBoundaryInclusion (n + 1) <| e.inv.left ⟨⟨y, hy⟩⟩ ) ∈ A  -- CategoryTheory.Arrow.iso_w e
+    change f ( (cubeBoundaryIncl (n + 1) ≫ e.inv.right) ⟨⟨y, hy⟩⟩ ) ∈ A
+    change f ( (e.inv.left ≫ diskBoundaryIncl (n + 1)) ⟨⟨y, hy⟩⟩ ) ∈ A
+    change f ( diskBoundaryIncl (n + 1) <| e.inv.left ⟨⟨y, hy⟩⟩ ) ∈ A  -- CategoryTheory.Arrow.iso_w e
     apply hf
   obtain ⟨a, H⟩ := Cube.homotopicWith_const_isMapOfPairs_of_unique_pi X A f' hf' hpi
   use a
@@ -300,18 +294,18 @@ theorem homotopicWith_const_isMapOfPairs_of_unique_pi
       map_zero_left x := by rw [H'.map_zero_left x, f'_d_i]
       map_one_left x := by rw [H'.map_one_left x]; rfl
       prop' t x := by
-        unfold H' d_i diskBoundaryInclusion
+        unfold H' d_i diskBoundaryIncl
         simp only [Arrow.mk_right, ContinuousMap.toFun_eq_coe,
           ContinuousMap.Homotopy.coe_toContinuousMap, ContinuousMap.Homotopy.hcomp_apply,
           ContinuousMap.Homotopy.refl_apply, ContinuousMap.comp_apply,
           ContinuousMap.HomotopyWith.coe_toHomotopy, hom_ofHom, ContinuousMap.coe_mk]
         apply H.prop' t
-        change idown ((diskBoundaryInclusion (n + 1) ≫ e.hom.right) x) ∈ _
-        change idown ((e.hom.left ≫ cubeBoundaryInclusion (n + 1)) x) ∈ _  -- diskPair.homeoCubePairULift_comm
-        change idown (cubeBoundaryInclusion (n + 1) (e.hom.left x)) ∈ ∂I^n + 1
-        have : ∀ z, idown (cubeBoundaryInclusion (n + 1) z) ∈ ∂I^n + 1 := by
+        change idown ((diskBoundaryIncl (n + 1) ≫ e.hom.right) x) ∈ _
+        change idown ((e.hom.left ≫ cubeBoundaryIncl (n + 1)) x) ∈ _  -- diskPair.homeoCubePairULift_comm
+        change idown (cubeBoundaryIncl (n + 1) (e.hom.left x)) ∈ ∂I^n + 1
+        have : ∀ z, idown (cubeBoundaryIncl (n + 1) z) ∈ ∂I^n + 1 := by
           intro ⟨z, hz⟩
-          unfold idown cubeBoundaryInclusion
+          unfold idown cubeBoundaryIncl
           simp only [hom_ofHom, ContinuousMap.coe_mk]
           simp_all only [Subtype.forall, Arrow.mk_right, ContinuousMap.comp_assoc, f', i_d, e, iup, d_i, idown]
           obtain ⟨val, property⟩ := a
@@ -406,11 +400,12 @@ theorem homotopicRel_boundary_of_homotopicWith_isMapOfPairs
     (H : ∃ g : C(disk.{u} (n + 1), X),
       Set.range g ⊆ A ∧ f.HomotopicWith g fun h ↦ IsMapOfPairs X A h) :
     ∃ l : C(disk.{u} (n + 1), X),
-      Set.range l ⊆ A ∧ f.HomotopicRel l (Set.range (diskBoundaryInclusion _)) := by
+      Set.range l ⊆ A ∧ f.HomotopicRel l (Set.range (diskBoundaryIncl _)) := by
   obtain ⟨g, gA, H⟩ := H
   replace H := H.some
   let H' := H.toContinuousMap.comp Cyl.stretchToWall
-  let l : C(disk.{u} (n + 1), X) := ⟨fun x ↦ H' ⟨1, x⟩, by fun_prop⟩
+  let l : C(disk.{u} (n + 1), X) := ⟨fun x ↦ H' ⟨1, x⟩, by
+    haveI := ContinuousMap.continuous H'; fun_prop ⟩
   use l
   constructor
   · apply Set.range_subset_iff.mpr
@@ -429,7 +424,7 @@ theorem homotopicRel_boundary_of_homotopicWith_isMapOfPairs
         rw [dist_eq_norm, sub_zero, norm_smul, norm_inv, norm_norm]
         apply inv_mul_cancel₀
         linarith only [hx1]
-      have : diskBoundaryInclusion.{u} (n + 1) ⟨‖x‖⁻¹ • x, xmem⟩ = ⟨⟨‖x‖⁻¹ • x, pf2⟩⟩ := rfl
+      have : diskBoundaryIncl.{u} (n + 1) ⟨‖x‖⁻¹ • x, xmem⟩ = ⟨⟨‖x‖⁻¹ • x, pf2⟩⟩ := rfl
       rw [← this]
       have := H.prop' ⟨2 - 2 * ‖x‖, pf1⟩ ⟨⟨‖x‖⁻¹ • x, xmem⟩⟩
       simp only [ContinuousMap.toFun_eq_coe, ContinuousMap.Homotopy.coe_toContinuousMap,
@@ -463,7 +458,7 @@ theorem homotopicRel_boundary_of_homotopicWith_isMapOfPairs
             ContinuousMap.coe_mk]
           obtain ⟨x, hx⟩ := x
           obtain ⟨⟨y, hy⟩, hy'⟩ := Set.mem_range.mp hy
-          simp only [diskBoundaryInclusion, hom_ofHom] at hy'
+          simp only [diskBoundaryIncl, hom_ofHom] at hy'
           replace hy' := (congr_arg (Subtype.val ∘ ULift.down) hy')
           simp only [Function.comp_apply] at hy'
           have hx1 : ‖x‖ = 1 := by
@@ -481,7 +476,7 @@ theorem homotopicRel_boundary_of_unique_pi
     (f : C(disk.{u} (n + 1), X)) (hf : IsMapOfPairs X A f)
     (hpi : ∀ a : A, Nonempty <| Unique <| π﹍ (n + 1) X A a) :
     ∃ l : C(disk.{u} (n + 1), X),
-      Set.range l ⊆ A ∧ f.HomotopicRel l (Set.range (diskBoundaryInclusion _)) := by
+      Set.range l ⊆ A ∧ f.HomotopicRel l (Set.range (diskBoundaryIncl _)) := by
   obtain ⟨a, H⟩ := homotopicWith_const_isMapOfPairs_of_unique_pi X A f hf hpi
   let g : C(disk.{u} (n + 1), X) := ContinuousMap.const (𝔻 (n + 1)) a
   have gr : Set.range g ⊆ A := by
@@ -500,30 +495,31 @@ theorem homotopicRel_boundary_of_unique_pi
 theorem isCompressible_subtype_val_of_unique_pi
     (n : ℕ) (X : Type u) [TopologicalSpace X] (A : Set X)
     (hpi : ∀ a : A, Nonempty <| Unique <| π﹍ (n + 1) X A a) :
-    IsCompressible (diskBoundaryInclusion (n + 1))
+    IsCompressible (diskBoundaryIncl (n + 1))
       (ofHom ⟨Subtype.val, continuous_subtype_val⟩ : of A ⟶ of X) where
   sq_hasLift := fun {F f} sq ↦ by
     constructor
     have F_pair : disk.IsMapOfPairs X A F.hom := fun x ↦ by
-      change (diskBoundaryInclusion (n + 1) ≫ F) x ∈ A
+      change (diskBoundaryIncl (n + 1) ≫ F) x ∈ A
       rw [← sq.w]
       simp only [hom_comp, hom_ofHom, ContinuousMap.comp_apply, ContinuousMap.coe_mk,
         Subtype.coe_prop]
     obtain ⟨l, lA, H⟩ := disk.homotopicRel_boundary_of_unique_pi X A F.hom F_pair hpi
     replace lA := Set.range_subset_iff.mp lA
-    let l' :  C(disk.{u} (n + 1), A) := ⟨fun x ↦ ⟨l x, lA x⟩, by fun_prop⟩
+    let l' :  C(disk.{u} (n + 1), A) := ⟨fun x ↦ ⟨l x, lA x⟩, by
+      haveI := ContinuousMap.continuous l; fun_prop⟩
     refine Nonempty.intro ⟨ofHom l', ?_, ?_⟩
     · ext x
       unfold l'
       simp only [hom_comp, hom_ofHom, ContinuousMap.comp_apply, ContinuousMap.coe_mk]
-      let x' := diskBoundaryInclusion (n + 1) x
-      have x'r : x' ∈ Set.range (diskBoundaryInclusion (n + 1)) := Set.mem_range_self x
+      let x' := diskBoundaryIncl (n + 1) x
+      have x'r : x' ∈ Set.range (diskBoundaryIncl (n + 1)) := Set.mem_range_self x
       have := H.some.prop' 1 x' x'r
       simp only [ContinuousMap.toFun_eq_coe, ContinuousMap.Homotopy.coe_toContinuousMap,
         ContinuousMap.Homotopy.apply_one, ContinuousMap.coe_mk] at this
       convert this
       unfold x'
-      change _ = (diskBoundaryInclusion (n + 1) ≫ F) x
+      change _ = (diskBoundaryIncl (n + 1) ≫ F) x
       rw [← sq.w]
       simp only [hom_comp, hom_ofHom, ContinuousMap.comp_apply, ContinuousMap.coe_mk]
     · convert H
@@ -534,7 +530,7 @@ then the inclusion map from `A` to `X` is `0`-compressible. -/
 theorem isCompressible_zero_subtype_val_of_bijective_iStar_zero
     (X : Type u) [TopologicalSpace X] (A : Set X) (pt : A)
     (hbi : Function.Bijective <| iStar 0 X A pt) :
-    IsCompressible (diskBoundaryInclusion 0)
+    IsCompressible (diskBoundaryIncl 0)
       (ofHom ⟨Subtype.val, continuous_subtype_val⟩ : of A ⟶ of X) := by
   constructor
   intro F f sq
@@ -555,20 +551,18 @@ theorem isCompressible_zero_subtype_val_of_bijective_iStar_zero
     unfold a
     rw [H.apply_one ![]]
     simp_all only [ContinuousMap.coe_mk, Function.comp_apply, Subtype.coe_prop, α', β', x]
-  have := H.toContinuousMap
   let l : C(disk.{u} 0, A) := ContinuousMap.const _ ⟨a, aA⟩
   constructor
   refine ⟨ofHom l, ?_, ?_⟩
   · ext x
     exact isEmptyElim x
   · exact Nonempty.intro
-      { toFun := fun ⟨t, _⟩ ↦ H.toContinuousMap ⟨t, ![]⟩
-        continuous_toFun := by fun_prop
+      { toFun := fun ⟨t, _⟩ ↦ H ⟨t, ![]⟩
+        continuous_toFun := by
+          haveI : Continuous H := ContinuousMap.HomotopyWith.continuous H
+          fun_prop
         map_zero_left y := by
-          unfold β'
-          simp only [ContinuousMap.const_apply, ContinuousMap.Homotopy.coe_toContinuousMap,
-            ContinuousMap.Homotopy.apply_zero]
-          unfold x
+          simp only [ContinuousMap.const_apply, ContinuousMap.HomotopyWith.apply_zero, β', x]
           congr
           have u : Unique <| EuclideanSpace ℝ (Fin 0) := by infer_instance
           convert u.uniq 0
@@ -589,7 +583,7 @@ from the top surface of the mapping cylinder of `φ` to the mapping cylinder of 
 is `n`-compressible for each natural number `n`. -/
 lemma isCompressible_mapcyl_domInclFromTop_of_isWeakHomotopyEquiv
     (n : ℕ) {X Y : TopCat.{u}} (φ : X ⟶ Y) (hφ : IsWeakHomotopyEquiv φ.hom) :
-    IsCompressible (diskBoundaryInclusion n) <| ofHom <| MapCyl.domInclFromTop φ := by
+    IsCompressible (diskBoundaryIncl n) <| ofHom <| MapCyl.domInclFromTop φ := by
   induction n with
   | zero =>
       have x := hφ.left.some
@@ -612,10 +606,10 @@ then the inclusion map `MapCyl.domIncl φ` from `X` to the mapping cylinder of `
 is `n`-compressible for each natural number `n`. -/
 theorem isCompressible_mapCyl_domIncl_of_isWeakHomotopyEquiv
     (n : ℕ) {X Y : TopCat.{u}} (φ : X ⟶ Y) (hφ : IsWeakHomotopyEquiv φ.hom) :
-    IsCompressible (diskBoundaryInclusion n) (MapCyl.domIncl φ) where
+    IsCompressible (diskBoundaryIncl n) (MapCyl.domIncl φ) where
   sq_hasLift := fun {F f} sq ↦ by
     have com := isCompressible_mapcyl_domInclFromTop_of_isWeakHomotopyEquiv n φ hφ
-    have sq' : CommSq (f ≫ (ofHom <| MapCyl.domInclToTop φ)) (diskBoundaryInclusion n)
+    have sq' : CommSq (f ≫ (ofHom <| MapCyl.domInclToTop φ)) (diskBoundaryIncl n)
       (ofHom <| MapCyl.domInclFromTop φ) F := ⟨sq.w⟩  -- (domIncl f).hom = (domInclFromTop f).comp (domInclToTop f)
     let l := com.sq_hasLift sq' |>.hasLift.some
     let inv : C(MapCyl.top φ, X) := toContinuousMap (MapCyl.domHomeoTop φ).symm
